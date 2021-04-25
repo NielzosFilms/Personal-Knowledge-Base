@@ -3,9 +3,9 @@ const crypto = require("crypto");
 
 const resolvers = {
   Query: {
-    hello: (root, args, { models, loggedIn }) => {
+    hello: (root, args, { models, loggedIn, user }) => {
       if (!loggedIn) return null;
-      return "Hello World";
+      return `Hello ${user.name}`;
     },
     login: async (root, { username, password }, { models, loggedIn }) => {
       const user = await models.User.findOne({
