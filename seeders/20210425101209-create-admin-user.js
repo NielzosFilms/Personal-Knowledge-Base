@@ -1,5 +1,7 @@
 "use strict";
 
+const passwordHash = require("password-hash");
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     /**
@@ -14,7 +16,7 @@ module.exports = {
     await queryInterface.bulkInsert("Users", [
       {
         name: "admin",
-        password: "asdf",
+        password: passwordHash.generate("asdf"),
       },
     ]);
   },
@@ -26,6 +28,6 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    await queryInterface.bulkInsert("Users", null, {});
+    await queryInterface.bulkDelete("Users", null, {});
   },
 };

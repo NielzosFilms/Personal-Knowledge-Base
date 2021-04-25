@@ -1,6 +1,7 @@
 "use strict";
 
-const { DATE } = require("sequelize");
+const { DATE, NOW } = require("sequelize");
+const passwordHash = require("password-hash");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -19,6 +20,10 @@ module.exports = {
       password: {
         type: Sequelize.STRING,
         allowNull: false,
+        private: true,
+        set(value) {
+          this.setDataValue("password", passwordHash.generate(value));
+        },
       },
       createdAt: {
         type: Sequelize.DATE,

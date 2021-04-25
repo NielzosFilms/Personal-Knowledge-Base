@@ -1,5 +1,6 @@
 "use strict";
 const { Model } = require("sequelize");
+const passwordHash = require("password-hash");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -21,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
       password: {
         type: DataTypes.STRING,
         allowNull: false,
+        private: true,
+        set(value) {
+          this.setDataValue("password", passwordHash.generate(value));
+        },
       },
     },
     {
