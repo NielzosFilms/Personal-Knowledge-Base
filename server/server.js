@@ -5,7 +5,7 @@ const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
 
-const { ApolloServer } = require("apollo-server-express");
+const { ApolloServer, AuthenticationError } = require("apollo-server-express");
 const typeDefs = require(path.join(__dirname, "/schema"));
 const resolvers = require(path.join(__dirname, "/resolvers"));
 
@@ -14,7 +14,12 @@ const sequelize = require(path.join(__dirname, "../models/index"));
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: { models: sequelize },
+  context: ({ req }) => {
+    const token = req.headers.authorization || "";
+    // const user = getUser(token);
+    if (token !== "") console.log(token);
+    return { models: sequelize, loggedIn: token === "TEST_TOKEN" };
+  },
 });
 server.applyMiddleware({ app });
 

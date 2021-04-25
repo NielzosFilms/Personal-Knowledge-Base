@@ -2,7 +2,9 @@ import { useQuery, gql } from "@apollo/client";
 
 const HELLO_QUERY = gql`
   query {
-    hello
+    users {
+      name
+    }
   }
 `;
 
@@ -12,12 +14,16 @@ function App() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error:(</p>;
 
+  const setToken = () => {
+    localStorage.setItem("token", "TEST_TOKEN");
+  };
+
   console.log(data);
   return (
     <div className="App">
       <header className="App-header">
         <p>Hello world</p>
-        <p>Query: {data.hello}</p>
+        <button onClick={setToken}>set token</button>
       </header>
     </div>
   );

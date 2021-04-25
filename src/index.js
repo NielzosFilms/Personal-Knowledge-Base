@@ -4,14 +4,29 @@ import "./css/index.css";
 import App from "./App/App";
 import reportWebVitals from "./reportWebVitals";
 
-import { ApolloClient, InMemoryCache } from "@apollo/client";
+import { ApolloClient, createHttpLink, InMemoryCache } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
 import { ApolloProvider } from "@apollo/client/react";
 
 const host = process.env.REACT_APP_APOLLO_CLIENT_HOST || "localhost";
 const port = process.env.REACT_APP_APOLLO_CLIENT_PORT || "8080";
 
-const client = new ApolloClient({
+const httpLink = createHttpLink({
   uri: `http://${host}:${port}/graphql`,
+});
+
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem("token");
+  return {
+    headers: {
+      ...headers,
+      authorization: token || "",
+    },
+  };
+});
+
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 
