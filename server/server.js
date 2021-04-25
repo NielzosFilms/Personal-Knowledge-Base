@@ -14,11 +14,25 @@ const sequelize = require(path.join(__dirname, "../models/index"));
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ req }) => {
+  context: async ({ req }) => {
     const token = req.headers.authorization || "";
-    // const user = getUser(token);
-    if (token !== "") console.log(token);
-    return { models: sequelize, loggedIn: token === "TEST_TOKEN" };
+    const session = await sequelize.Session.findOne({
+      where: {
+        token: token,
+      },
+    });
+
+    if (session) {
+      const user = await sequelize.User.findOne({
+        where: {
+          id: session.user_id,
+        },
+      });
+      if (user) {
+        return { models: sequelize, loggedIn: true, user };
+      }
+    }
+    return { models: sequelize, loggedIn: false, user: null };
   },
 });
 server.applyMiddleware({ app });

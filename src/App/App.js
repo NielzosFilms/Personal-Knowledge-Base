@@ -1,29 +1,66 @@
-import { useQuery, gql } from "@apollo/client";
+import React from "react";
+import { useQuery, useLazyQuery, gql } from "@apollo/client";
 
-const HELLO_QUERY = gql`
-  query {
-    users {
-      name
+const LOGIN_QUERY = gql`
+  query Login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      success
+      token
     }
   }
 `;
 
+const HELLO_QUERY = gql`
+  query {
+    hello
+  }
+`;
+
 function App() {
-  const { loading, error, data } = useQuery(HELLO_QUERY);
+  const hello = useQuery(HELLO_QUERY);
+  const [execLogin, loginResult] = useLazyQuery(LOGIN_QUERY);
+  const [username, setUsername] = React.useState("");
+  const [password, setPassword] = React.useState("");
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error:(</p>;
-
-  const setToken = () => {
-    localStorage.setItem("token", "TEST_TOKEN");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    execLogin({
+      variables: {
+        username,
+        password,
+      },
+    });
   };
 
-  console.log(data);
+  React.useEffect(() => {
+    if (loginResult.data) {
+      if (loginResult.data.login.success) {
+        console.log("token", loginResult.data.login.token);
+        localStorage.setItem("token", loginResult.data.login.token);
+      }
+    }
+  }, [loginResult]);
+
   return (
     <div className="App">
       <header className="App-header">
         <p>Hello world</p>
-        <button onClick={setToken}>set token</button>
+        <form method="post" onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+          />
+          <input type="submit" value="login" />
+        </form>
+        {JSON.stringify(hello.data) || ""}
       </header>
     </div>
   );
