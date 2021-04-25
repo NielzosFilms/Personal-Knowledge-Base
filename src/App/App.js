@@ -1,69 +1,69 @@
 import React from "react";
-import { useQuery, useLazyQuery, gql } from "@apollo/client";
+import { useQuery, gql } from "@apollo/client";
 
-const LOGIN_QUERY = gql`
-  query Login($username: String!, $password: String!) {
-    login(username: $username, password: $password) {
-      success
-      token
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
+import CssBaseline from "@material-ui/core/CssBaseline";
+
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+
+import Layout from "../Layout";
+
+const AUTHENTICATED = gql`
+    query {
+        isAuthenticated
     }
-  }
-`;
-
-const HELLO_QUERY = gql`
-  query {
-    hello
-  }
 `;
 
 function App() {
-  const hello = useQuery(HELLO_QUERY);
-  const [execLogin, loginResult] = useLazyQuery(LOGIN_QUERY);
-  const [username, setUsername] = React.useState("");
-  const [password, setPassword] = React.useState("");
+    const { loading, error, data } = useQuery(AUTHENTICATED);
+    const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    execLogin({
-      variables: {
-        username,
-        password,
-      },
-    });
-  };
+    const theme = React.useMemo(
+        () =>
+            createMuiTheme({
+                palette: {
+                    primary: {
+                        main: "#A1469E",
+                    },
+                    secondary: {
+                        main: "#02A699",
+                    },
+                    type: prefersDarkMode ? "dark" : "light",
+                },
+            }),
+        [prefersDarkMode]
+    );
 
-  React.useEffect(() => {
-    if (loginResult.data) {
-      if (loginResult.data.login.success) {
-        console.log("token", loginResult.data.login.token);
-        localStorage.setItem("token", loginResult.data.login.token);
-      }
+    const ThemeWrapper = ({ children }) => (
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Layout>{children}</Layout>
+        </ThemeProvider>
+    );
+
+    if (loading) {
+        return <ThemeWrapper>Loading...</ThemeWrapper>;
     }
-  }, [loginResult]);
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <p>Hello world</p>
-        <form method="post" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-          />
-          <input type="submit" value="login" />
-        </form>
-        {JSON.stringify(hello.data) || ""}
-      </header>
-    </div>
-  );
+    if (error) {
+        return <ThemeWrapper>Error :(</ThemeWrapper>;
+    }
+
+    if (!data.isAuthenticated) {
+        return <ThemeWrapper>You need to log in</ThemeWrapper>;
+    }
+
+    return (
+        <Router>
+            <ThemeWrapper>
+                <Switch>
+                    <Route path="/ping">Pong</Route>
+                    <Route path="/">Root</Route>
+                </Switch>
+            </ThemeWrapper>
+        </Router>
+    );
 }
 
 export default App;
