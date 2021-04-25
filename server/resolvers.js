@@ -27,6 +27,13 @@ const resolvers = {
       }
       return { success: false, token: null };
     },
+    isAuthenticated: async (root, args, { loggedIn }) => {
+      return loggedIn;
+    },
+    getAuthenticatedUser: async (root, args, { loggedIn, user }) => {
+      if (!loggedIn) return null;
+      return user;
+    },
     users: async (root, args, { models, loggedIn }) => {
       if (!loggedIn) return null;
       return models.User.findAll();

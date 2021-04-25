@@ -15,6 +15,9 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: async ({ req }) => {
+    if (process.env.DISABLE_AUTHENTICATION === "1") {
+      return { models: sequelize, loggedIn: true, user: null };
+    }
     const token = req.headers.authorization || "";
     const session = await sequelize.Session.findOne({
       where: {

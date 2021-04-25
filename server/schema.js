@@ -16,6 +16,8 @@ const typeDefs = gql(`
     type Query {
         hello: String
         login(username: String!, password: String!): LoginPayload
+        isAuthenticated: Boolean
+        getAuthenticatedUser: User
         users: [User]
     }
 `);
