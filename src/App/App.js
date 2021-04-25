@@ -8,6 +8,7 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import Layout from "../Layout";
+import Login from "../components/Login";
 
 const AUTHENTICATED = gql`
     query {
@@ -38,7 +39,7 @@ function App() {
     const ThemeWrapper = ({ children }) => (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Layout>{children}</Layout>
+            {children}
         </ThemeProvider>
     );
 
@@ -51,16 +52,22 @@ function App() {
     }
 
     if (!data.isAuthenticated) {
-        return <ThemeWrapper>You need to log in</ThemeWrapper>;
+        return (
+            <ThemeWrapper>
+                <Login />
+            </ThemeWrapper>
+        );
     }
 
     return (
         <Router>
             <ThemeWrapper>
-                <Switch>
-                    <Route path="/ping">Pong</Route>
-                    <Route path="/">Root</Route>
-                </Switch>
+                <Layout>
+                    <Switch>
+                        <Route path="/ping">Pong</Route>
+                        <Route path="/">index</Route>
+                    </Switch>
+                </Layout>
             </ThemeWrapper>
         </Router>
     );

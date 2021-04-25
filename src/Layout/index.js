@@ -7,6 +7,7 @@ import LeftMenu from "./LeftMenu";
 const useStyles = makeStyles((theme) => ({
     root: {
         marginTop: theme.spacing(8),
+        marginLeft: 240,
     },
 }));
 
