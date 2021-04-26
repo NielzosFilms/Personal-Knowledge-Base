@@ -7,7 +7,7 @@ import ContentWrapper from "./ContentWrapper";
 
 const useStyles = makeStyles((theme) => ({
     root: {
-        marginTop: theme.spacing(8),
+        marginTop: theme.spacing(6),
         marginLeft: 240,
     },
 }));

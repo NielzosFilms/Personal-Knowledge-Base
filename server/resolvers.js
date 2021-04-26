@@ -50,6 +50,20 @@ const resolvers = {
             if (!loggedIn) return null;
             return models.User.findAll();
         },
+        notes: async (root, args, { models, loggedIn, user }) => {
+            if (!loggedIn) return null;
+            return models.Note.findAll();
+        },
+    },
+    Note: {
+        user: async (root, args, { models, loggedIn, user }) => {
+            if (!loggedIn) return null;
+            return await models.User.findOne({
+                where: {
+                    id: root.dataValues.user_id,
+                },
+            });
+        },
     },
 };
 

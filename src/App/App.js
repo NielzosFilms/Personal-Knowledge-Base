@@ -9,7 +9,7 @@ import { Route, Switch, useHistory, Redirect } from "react-router-dom";
 
 import Layout from "../Layout";
 import Login from "../components/Login";
-import Markdown from "../components/markdown/Markdown";
+import Markdown from "../components/markdown/MarkdownNew";
 import Welcome from "../components/Welcome";
 
 const AUTHENTICATED = gql`
@@ -65,19 +65,11 @@ function App() {
                     {data.isAuthenticated && <Redirect to="/" />}
                     <Login setUpdateTime={setUpdateTime} />
                 </Route>
-                <Route path="/">
-                    {!data.isAuthenticated && <Redirect to="/login" />}
-                    <Switch>
-                        <Layout setUpdateTime={setUpdateTime}>
-                            <Route path="/markdown">
-                                <Markdown />
-                            </Route>
-                            <Route path="/">
-                                <Welcome />
-                            </Route>
-                        </Layout>
-                    </Switch>
-                </Route>
+                {!data.isAuthenticated && <Redirect to="/login" />}
+                <Layout setUpdateTime={setUpdateTime}>
+                    <Route exact path="/markdown" component={Markdown} />
+                    <Route exact path="/" component={Welcome} />
+                </Layout>
             </Switch>
         </ThemeWrapper>
     );

@@ -8,6 +8,13 @@ const typeDefs = gql(`
         updatedAt: String!
     }
 
+    type Note {
+        id: Int!
+        filename: String!
+        content: String!
+        user: User
+    }
+
     type LoginPayload {
         success: Boolean!
         token: String
@@ -20,6 +27,7 @@ const typeDefs = gql(`
         getAuthenticatedUser: User
         logout: Boolean
         users: [User]
+        notes: [Note]
     }
 `);
 
