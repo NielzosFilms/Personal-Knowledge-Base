@@ -10,9 +10,12 @@ import {
     AppBar,
     Toolbar,
     Typography,
+    Snackbar,
+    IconButton,
 } from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
-import { Autorenew } from "@material-ui/icons";
+import { Close } from "@material-ui/icons";
 import { useHistory, Redirect } from "react-router-dom";
 
 const LOGIN_QUERY = gql`
@@ -46,6 +49,7 @@ export default function Login({ setUpdateTime }) {
     const [password, setPassword] = React.useState("");
     const classes = useStyles();
     const history = useHistory();
+    const [open, setOpen] = React.useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -62,6 +66,8 @@ export default function Login({ setUpdateTime }) {
             if (loginResult.data.login.success) {
                 localStorage.setItem("token", loginResult.data.login.token);
                 setUpdateTime(new Date());
+            } else {
+                setOpen(true);
             }
         }
     }, [loginResult]);
@@ -110,6 +116,27 @@ export default function Login({ setUpdateTime }) {
                     </form>
                 </Paper>
             </Container>
+            <Snackbar
+                anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left",
+                }}
+                open={open}
+                autoHideDuration={3000}
+                onClose={() => setOpen(false)}
+            >
+                <Alert severity="error">
+                    Username and or password is incorrect.
+                    <IconButton
+                        size="small"
+                        aria-label="close"
+                        color="inherit"
+                        onClick={() => setOpen(false)}
+                    >
+                        <Close fontSize="small" />
+                    </IconButton>
+                </Alert>
+            </Snackbar>
         </>
     );
 }
