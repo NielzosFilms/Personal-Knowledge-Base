@@ -25,7 +25,10 @@ const resolvers = {
                     return { success: true, token };
                 }
             }
-            return { success: false, token: null };
+            return {
+                success: false,
+                token: null,
+            };
         },
         logout: async (root, args, { models, loggedIn, user, token }) => {
             if (!loggedIn || !user || !token) return false;
