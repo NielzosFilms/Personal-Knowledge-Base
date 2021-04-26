@@ -13,6 +13,7 @@ import {
 } from "@material-ui/core";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { Autorenew } from "@material-ui/icons";
+import { useHistory, Redirect } from "react-router-dom";
 
 const LOGIN_QUERY = gql`
     query Login($username: String!, $password: String!) {
@@ -39,11 +40,12 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Login() {
+export default function Login({ setUpdateTime }) {
     const [execLogin, loginResult] = useLazyQuery(LOGIN_QUERY);
     const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
     const classes = useStyles();
+    const history = useHistory();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -58,8 +60,8 @@ export default function Login() {
     React.useEffect(() => {
         if (loginResult.data) {
             if (loginResult.data.login.success) {
-                console.log("token", loginResult.data.login.token);
                 localStorage.setItem("token", loginResult.data.login.token);
+                setUpdateTime(new Date());
             }
         }
     }, [loginResult]);

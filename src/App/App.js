@@ -5,10 +5,12 @@ import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { Route, Switch, useHistory, Redirect } from "react-router-dom";
 
 import Layout from "../Layout";
 import Login from "../components/Login";
+import Markdown from "../components/markdown/Markdown";
+import Welcome from "../components/Welcome";
 
 const AUTHENTICATED = gql`
     query {
@@ -17,8 +19,9 @@ const AUTHENTICATED = gql`
 `;
 
 function App() {
-    const { loading, error, data } = useQuery(AUTHENTICATED);
+    const { loading, error, data, refetch } = useQuery(AUTHENTICATED);
     const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+    const [updateTime, setUpdateTime] = React.useState(new Date());
 
     const theme = React.useMemo(
         () =>
@@ -36,6 +39,10 @@ function App() {
         [prefersDarkMode]
     );
 
+    React.useEffect(() => {
+        refetch();
+    }, [updateTime]);
+
     const ThemeWrapper = ({ children }) => (
         <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -51,25 +58,28 @@ function App() {
         return <ThemeWrapper>Error :(</ThemeWrapper>;
     }
 
-    if (!data.isAuthenticated) {
-        return (
-            <ThemeWrapper>
-                <Login />
-            </ThemeWrapper>
-        );
-    }
-
     return (
-        <Router>
-            <ThemeWrapper>
-                <Layout>
+        <ThemeWrapper>
+            <Switch>
+                <Route path="/login">
+                    {data.isAuthenticated && <Redirect to="/" />}
+                    <Login setUpdateTime={setUpdateTime} />
+                </Route>
+                <Route path="/">
+                    {!data.isAuthenticated && <Redirect to="/login" />}
                     <Switch>
-                        <Route path="/ping">Pong</Route>
-                        <Route path="/">index</Route>
+                        <Layout setUpdateTime={setUpdateTime}>
+                            <Route path="/markdown">
+                                <Markdown />
+                            </Route>
+                            <Route path="/">
+                                <Welcome />
+                            </Route>
+                        </Layout>
                     </Switch>
-                </Layout>
-            </ThemeWrapper>
-        </Router>
+                </Route>
+            </Switch>
+        </ThemeWrapper>
     );
 }
 

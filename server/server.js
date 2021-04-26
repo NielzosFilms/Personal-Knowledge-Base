@@ -12,42 +12,47 @@ const resolvers = require(path.join(__dirname, "/resolvers"));
 const sequelize = require(path.join(__dirname, "../models/index"));
 
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context: async ({ req }) => {
-    if (process.env.DISABLE_AUTHENTICATION === "1") {
-      return { models: sequelize, loggedIn: true, user: null };
-    }
-    const token = req.headers.authorization || "";
-    const session = await sequelize.Session.findOne({
-      where: {
-        token: token,
-      },
-    });
+    typeDefs,
+    resolvers,
+    context: async ({ req }) => {
+        if (process.env.DISABLE_AUTHENTICATION === "1") {
+            return {
+                models: sequelize,
+                loggedIn: true,
+                user: null,
+                token: null,
+            };
+        }
+        const token = req.headers.authorization || "";
+        const session = await sequelize.Session.findOne({
+            where: {
+                token: token,
+            },
+        });
 
-    if (session) {
-      const user = await sequelize.User.findOne({
-        where: {
-          id: session.user_id,
-        },
-      });
-      if (user) {
-        return { models: sequelize, loggedIn: true, user };
-      }
-    }
-    return { models: sequelize, loggedIn: false, user: null };
-  },
+        if (session) {
+            const user = await sequelize.User.findOne({
+                where: {
+                    id: session.user_id,
+                },
+            });
+            if (user) {
+                return { models: sequelize, loggedIn: true, user, token };
+            }
+        }
+        return { models: sequelize, loggedIn: false, user: null, token: null };
+    },
 });
 server.applyMiddleware({ app });
 
 app.use(express.static(path.join(__dirname, "../build")));
 
 app.get("/ping", function (req, res) {
-  return res.send("pong");
+    return res.send("pong");
 });
 
 app.get("/", function (req, res) {
-  res.sendFile(path.join(__dirname, "../build", "index.html"));
+    res.sendFile(path.join(__dirname, "../build", "index.html"));
 });
 
 app.listen(process.env.SERVER_PORT || 8080);

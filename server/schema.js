@@ -18,6 +18,7 @@ const typeDefs = gql(`
         login(username: String!, password: String!): LoginPayload
         isAuthenticated: Boolean
         getAuthenticatedUser: User
+        logout: Boolean
         users: [User]
     }
 `);

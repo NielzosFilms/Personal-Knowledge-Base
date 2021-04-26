@@ -3,6 +3,7 @@ import { makeStyles, useTheme } from "@material-ui/core/styles";
 
 import TopBar from "./TopBar";
 import LeftMenu from "./LeftMenu";
+import ContentWrapper from "./ContentWrapper";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -11,13 +12,15 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Layout({ children }) {
+export default function Layout({ children, setUpdateTime }) {
     const classes = useStyles();
     return (
         <>
-            <TopBar />
+            <TopBar setUpdateTime={setUpdateTime} />
             <LeftMenu />
-            <main className={classes.root}>{children}</main>
+            <main className={classes.root}>
+                <ContentWrapper>{children}</ContentWrapper>
+            </main>
         </>
     );
 }

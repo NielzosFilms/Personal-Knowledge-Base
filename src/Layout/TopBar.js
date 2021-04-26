@@ -1,4 +1,5 @@
 import React from "react";
+import { useQuery, useLazyQuery, gql } from "@apollo/client";
 import clsx from "clsx";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import {
@@ -14,7 +15,13 @@ import {
     ListItemIcon,
     ListItemText,
 } from "@material-ui/core";
-import { Menu, ChevronLeft, ChevronRight, Home } from "@material-ui/icons";
+import {
+    Menu,
+    ChevronLeft,
+    ChevronRight,
+    Home,
+    ExitToApp,
+} from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
 
 const drawerWidth = 240;
@@ -57,7 +64,7 @@ const useStyles = makeStyles((theme) => ({
         padding: theme.spacing(0, 1),
         // necessary for content to be below app bar
         ...theme.mixins.toolbar,
-        justifyContent: "flex-start",
+        justifyContent: "space-between",
     },
     content: {
         flexGrow: 1,
@@ -75,7 +82,25 @@ const useStyles = makeStyles((theme) => ({
         }),
         marginRight: 0,
     },
+    selected: {
+        color: theme.palette.secondary,
+    },
 }));
+
+const USER_QUERY = gql`
+    query {
+        getAuthenticatedUser {
+            id
+            name
+        }
+    }
+`;
+
+const LOGOUT_QUERY = gql`
+    query {
+        logout
+    }
+`;
 
 const menuButtons = [
     {
@@ -83,18 +108,33 @@ const menuButtons = [
         icon: <Home />,
         route: "/",
     },
+    {
+        text: "Markdown test",
+        icon: <Home />,
+        route: "/markdown",
+    },
 ];
 
-export default function TopBar() {
+export default function TopBar({ setUpdateTime }) {
     const classes = useStyles();
     const theme = useTheme();
     const history = useHistory();
     const [open, setOpen] = React.useState(false);
+    const [doLogout, logoutResult] = useLazyQuery(LOGOUT_QUERY);
 
     const handleClick = (route) => {
         history.push(route);
         setOpen(false);
     };
+
+    const handleLogout = () => {
+        doLogout();
+    };
+
+    if (logoutResult.data?.logout) {
+        localStorage.removeItem("token");
+        setUpdateTime(new Date());
+    }
 
     return (
         <>
@@ -109,6 +149,9 @@ export default function TopBar() {
                     <Typography variant="h6" noWrap className={classes.title}>
                         Knowledge Base
                     </Typography>
+                    {/* <Typography noWrap>
+                        {userQuery.data.getAuthenticatedUser.name}
+                    </Typography> */}
                     <IconButton
                         color="inherit"
                         aria-label="open drawer"
@@ -133,10 +176,13 @@ export default function TopBar() {
                 <div className={classes.drawerHeader}>
                     <IconButton onClick={() => setOpen(false)}>
                         {theme.direction === "ltr" ? (
-                            <ChevronLeft />
-                        ) : (
                             <ChevronRight />
+                        ) : (
+                            <ChevronLeft />
                         )}
+                    </IconButton>
+                    <IconButton onClick={handleLogout}>
+                        <ExitToApp />
                     </IconButton>
                 </div>
                 <Divider />
@@ -146,6 +192,7 @@ export default function TopBar() {
                             button
                             key={item.text}
                             onClick={() => handleClick(item.route)}
+                            selected={history.location.pathname === item.route}
                         >
                             <ListItemIcon>{item.icon}</ListItemIcon>
                             <ListItemText primary={item.text} />
