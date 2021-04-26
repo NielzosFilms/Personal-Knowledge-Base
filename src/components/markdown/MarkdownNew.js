@@ -13,8 +13,18 @@ import {
 import { Edit, Close, Save, GetApp } from "@material-ui/icons";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useQuery, gql } from "@apollo/client";
 
 import test from "./test.md";
+
+const NOTE_QUERY = gql`
+    query {
+        notes {
+            filename
+            content
+        }
+    }
+`;
 
 const useStyles = makeStyles((theme) => ({
     divider: {
@@ -33,10 +43,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function MarkdownNew() {
+    const noteQuery = useQuery(NOTE_QUERY);
     const classes = useStyles();
     const theme = useTheme();
     const [text, setText] = React.useState("");
-    const [filename, setFilename] = React.useState("test");
+    const [filename, setFilename] = React.useState("");
     const [edit, setEdit] = React.useState(false);
 
     useHotkeys("ctrl+s", (e) => {
@@ -44,12 +55,19 @@ export default function MarkdownNew() {
         e.preventDefault();
     });
 
-    const fetchData = async () => {
-        fetch(test)
-            .then((res) => res.text())
-            .then((text) => setText(text));
-    };
-    if (text === "") fetchData();
+    // const fetchData = async () => {
+    //     fetch(test)
+    //         .then((res) => res.text())
+    //         .then((text) => setText(text));
+    // };
+    // if (text === "") fetchData();
+
+    React.useEffect(() => {
+        if (noteQuery.data) {
+            setText(noteQuery.data.notes[0].content);
+            setFilename(noteQuery.data.notes[0].filename);
+        }
+    }, [noteQuery.loading]);
 
     const handleClose = () => {
         if (window.confirm("You have unsaved changes!")) {
