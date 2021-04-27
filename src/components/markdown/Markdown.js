@@ -1,24 +1,20 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import {
-    TextareaAutosize,
     TextField,
     IconButton,
     Toolbar,
     Divider,
-    Paper,
     AppBar,
     Grid,
     Typography,
     Box,
 } from "@material-ui/core";
-import { Edit, Close, Save, GetApp, Autorenew } from "@material-ui/icons";
-import { makeStyles, useTheme } from "@material-ui/core/styles";
+import { Edit, Close, Save, GetApp } from "@material-ui/icons";
+import { makeStyles } from "@material-ui/core/styles";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { useHistory, useParams } from "react-router-dom";
-
-import test from "./test.md";
 
 const NOTE_QUERY = gql`
     query Note($id: Int!) {
@@ -94,12 +90,6 @@ export default function MarkdownNew({ isNew = false }) {
         }
     }, [noteResult.loading]);
 
-    const handleClose = () => {
-        // if (window.confirm("You have unsaved changes!")) {
-        setEdit(false);
-        // }
-    };
-
     const handleSave = async () => {
         if (isNew) {
             createNote({
@@ -128,6 +118,12 @@ export default function MarkdownNew({ isNew = false }) {
     React.useEffect(() => {
         noteResult.refetch();
     }, [updateNoteResult.loading]);
+
+    const handleClose = () => {
+        // if (window.confirm("You have unsaved changes!")) {
+        setEdit(false);
+        // }
+    };
 
     const handleDownload = () => {
         console.log("download");
