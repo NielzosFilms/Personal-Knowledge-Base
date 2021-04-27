@@ -1,13 +1,16 @@
 const passwordHash = require("password-hash");
 const crypto = require("crypto");
+const { GraphQLDateTime } = require("graphql-iso-date");
 
 const resolvers = {
+    Date: GraphQLDateTime,
     Query: {
         hello: (root, args, { models, loggedIn, user }) => {
             if (!loggedIn) return null;
             return `Hello ${user.name}`;
         },
         login: async (root, { username, password }, { models, loggedIn }) => {
+            if (loggedIn) return { success: false, token: null };
             const user = await models.User.findOne({
                 where: {
                     name: username,
@@ -52,7 +55,20 @@ const resolvers = {
         },
         notes: async (root, args, { models, loggedIn, user }) => {
             if (!loggedIn) return null;
-            return models.Note.findAll();
+            return models.Note.findAll({
+                where: {
+                    user_id: user.id,
+                },
+            });
+        },
+        noteById: async (root, { id }, { models, loggedIn, user }) => {
+            if (!loggedIn) return null;
+            return models.Note.findOne({
+                where: {
+                    id,
+                    user_id: user.id,
+                },
+            });
         },
     },
     Note: {
@@ -61,6 +77,47 @@ const resolvers = {
             return await models.User.findOne({
                 where: {
                     id: root.dataValues.user_id,
+                },
+            });
+        },
+    },
+    Mutation: {
+        createNote: async (
+            root,
+            { filename, content },
+            { models, loggedIn, user }
+        ) => {
+            if (!loggedIn) return null;
+            const note = await models.Note.create({
+                filename,
+                content,
+                user_id: Number(user.id),
+            });
+            await note.save();
+            return note;
+        },
+        updateNote: async (
+            root,
+            { id, filename, content },
+            { models, loggedIn, user }
+        ) => {
+            if (!loggedIn) return null;
+            await models.Note.update(
+                {
+                    filename,
+                    content,
+                },
+                {
+                    where: {
+                        id,
+                        user_id: Number(user.id),
+                    },
+                }
+            );
+            return await models.Note.findOne({
+                where: {
+                    id,
+                    user_id: Number(user.id),
                 },
             });
         },

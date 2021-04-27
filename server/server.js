@@ -19,7 +19,10 @@ const server = new ApolloServer({
             return {
                 models: sequelize,
                 loggedIn: true,
-                user: null,
+                user: {
+                    id: 1,
+                    name: "admin",
+                },
                 token: null,
             };
         }

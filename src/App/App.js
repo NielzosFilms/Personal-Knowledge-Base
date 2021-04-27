@@ -9,7 +9,7 @@ import { Route, Switch, useHistory, Redirect } from "react-router-dom";
 
 import Layout from "../Layout";
 import Login from "../components/Login";
-import Markdown from "../components/markdown/MarkdownNew";
+import Markdown from "../components/markdown/Markdown";
 import Welcome from "../components/Welcome";
 
 const AUTHENTICATED = gql`
@@ -67,7 +67,10 @@ function App() {
                 </Route>
                 {!data.isAuthenticated && <Redirect to="/login" />}
                 <Layout setUpdateTime={setUpdateTime}>
-                    <Route exact path="/markdown" component={Markdown} />
+                    <Route exact path="/notes/new">
+                        <Markdown isNew />
+                    </Route>
+                    <Route exact path="/notes/edit/:id" component={Markdown} />
                     <Route exact path="/" component={Welcome} />
                 </Layout>
             </Switch>

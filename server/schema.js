@@ -1,11 +1,13 @@
 const { gql } = require("apollo-server-express");
 
 const typeDefs = gql(`
+    scalar Date
+
     type User {
         id: Int!
         name: String!
-        createdAt: String!
-        updatedAt: String!
+        createdAt: Date!
+        updatedAt: Date!
     }
 
     type Note {
@@ -13,6 +15,8 @@ const typeDefs = gql(`
         filename: String!
         content: String!
         user: User
+        createdAt: Date!
+        updatedAt: Date!
     }
 
     type LoginPayload {
@@ -28,6 +32,12 @@ const typeDefs = gql(`
         logout: Boolean
         users: [User]
         notes: [Note]
+        noteById(id: Int!): Note
+    }
+
+    type Mutation {
+        createNote(filename: String!, content: String): Note
+        updateNote(id: Int!, filename: String, content: String): Note
     }
 `);
 
