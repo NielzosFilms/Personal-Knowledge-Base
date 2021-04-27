@@ -21,6 +21,7 @@ import {
     ChevronRight,
     Home,
     ExitToApp,
+    Note,
 } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
 
@@ -109,9 +110,9 @@ const menuButtons = [
         route: "/",
     },
     {
-        text: "Markdown test",
-        icon: <Home />,
-        route: "/markdown",
+        text: "Notes",
+        icon: <Note />,
+        route: "/notes",
     },
 ];
 

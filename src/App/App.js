@@ -9,6 +9,7 @@ import { Route, Switch, useHistory, Redirect } from "react-router-dom";
 
 import Layout from "../Layout";
 import Login from "../components/Login";
+import NotesList from "../components/markdown/List";
 import Markdown from "../components/markdown/Markdown";
 import Welcome from "../components/Welcome";
 
@@ -67,6 +68,7 @@ function App() {
                 </Route>
                 {!data.isAuthenticated && <Redirect to="/login" />}
                 <Layout setUpdateTime={setUpdateTime}>
+                    <Route exact path="/notes" component={NotesList} />
                     <Route exact path="/notes/new">
                         <Markdown isNew />
                     </Route>

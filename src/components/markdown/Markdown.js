@@ -10,11 +10,12 @@ import {
     Typography,
     Box,
 } from "@material-ui/core";
-import { Edit, Close, Save, GetApp } from "@material-ui/icons";
+import { Edit, Close, Save, GetApp, ArrowBack } from "@material-ui/icons";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { useHistory, useParams } from "react-router-dom";
+import { getDateString } from "../../services/dateFunctions";
 
 const NOTE_QUERY = gql`
     query Note($id: Int!) {
@@ -48,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
         marginTop: theme.spacing(1),
         marginBottom: theme.spacing(1),
     },
-    leftBtnGroup: {
+    grow: {
         flexGrow: 1,
     },
     appBar: {
@@ -133,7 +134,13 @@ export default function MarkdownNew({ isNew = false }) {
         if (edit) {
             return (
                 <>
-                    <div className={classes.leftBtnGroup}>
+                    <Box className={classes.grow}>
+                        <IconButton
+                            color="secondary"
+                            onClick={() => history.push("/notes")}
+                        >
+                            <ArrowBack />
+                        </IconButton>
                         <TextField
                             label="Filename"
                             size="small"
@@ -148,8 +155,8 @@ export default function MarkdownNew({ isNew = false }) {
                         <IconButton color="secondary" onClick={handleDownload}>
                             <GetApp />
                         </IconButton>
-                    </div>
-                    <div>
+                    </Box>
+                    <Box>
                         <IconButton
                             edge="end"
                             color="secondary"
@@ -157,16 +164,22 @@ export default function MarkdownNew({ isNew = false }) {
                         >
                             <Close />
                         </IconButton>
-                    </div>
+                    </Box>
                 </>
             );
         } else {
             return (
                 <>
-                    <div className={classes.leftBtnGroup}>
-                        <Typography variant="h6">{filename}</Typography>
-                    </div>
-                    <div>
+                    <IconButton
+                        color="secondary"
+                        onClick={() => history.push("/notes")}
+                    >
+                        <ArrowBack />
+                    </IconButton>
+                    <Typography className={classes.grow} variant="h6">
+                        {filename}
+                    </Typography>
+                    <Box>
                         <IconButton
                             edge="end"
                             color="secondary"
@@ -174,7 +187,7 @@ export default function MarkdownNew({ isNew = false }) {
                         >
                             <Edit />
                         </IconButton>
-                    </div>
+                    </Box>
                 </>
             );
         }
@@ -201,14 +214,6 @@ export default function MarkdownNew({ isNew = false }) {
         } else {
             return <ReactMarkdown>{text}</ReactMarkdown>;
         }
-    };
-
-    const getDateString = (input) => {
-        const split = input.split("T");
-        const date = split[0].split("-");
-        const timeString = split[1].split(".");
-        const time = timeString[0].split(":");
-        return `${time[0]}:${time[1]} ${date[2]}-${date[1]}-${date[0]}`;
     };
 
     if (noteResult.loading) {
