@@ -33,11 +33,13 @@ const typeDefs = gql(`
         users: [User]
         notes: [Note]
         noteById(id: Int!): Note
+        noteWithIds(ids: [Int]!): [Note]
     }
 
     type Mutation {
         createNote(filename: String!, content: String): Note
         updateNote(id: Int!, filename: String, content: String): Note
+        deleteNote(id: Int!): Boolean
     }
 `);
 

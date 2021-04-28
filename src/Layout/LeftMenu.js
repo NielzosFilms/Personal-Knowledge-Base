@@ -11,9 +11,24 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
+    IconButton,
 } from "@material-ui/core";
+import { useHistory } from "react-router-dom";
+import { getNoteHistory } from "../services/noteHistory";
+import { addNoteToHistory } from "../services/noteHistory";
+import { useQuery, gql } from "@apollo/client";
 
-import { Home } from "@material-ui/icons";
+import { Launch } from "@material-ui/icons";
+import { isNonNullType } from "graphql";
+
+const NOTE_QUERY = gql`
+    query Notes($ids: [Int]!) {
+        noteWithIds(ids: $ids) {
+            id
+            filename
+        }
+    }
+`;
 
 const drawerWidth = 240;
 
@@ -39,7 +54,22 @@ const useStyles = makeStyles((theme) => ({
 
 export default function LeftMenu() {
     const classes = useStyles();
+    const notesResult = useQuery(NOTE_QUERY, {
+        variables: {
+            ids: getNoteHistory(),
+        },
+    });
     // const [open, setOpen] = React.useState(true);
+    const history = useHistory();
+
+    history.listen(() => {
+        notesResult.refetch();
+    });
+
+    const onClick = (id) => {
+        addNoteToHistory(id);
+        history.push(`/notes/edit/${id}`);
+    };
 
     return (
         <Drawer
@@ -51,14 +81,34 @@ export default function LeftMenu() {
         >
             <Toolbar />
             <div className={classes.drawerContainer}>
-                <List></List>
-                <Divider />
                 <List>
-                    <ListItem button key={"Hello world"}>
-                        <ListItemIcon></ListItemIcon>
-                        <ListItemText primary={"Hello world"} />
+                    <ListItem>
+                        <Typography variant="h6">Note history</Typography>
                     </ListItem>
                 </List>
+                <Divider />
+                {notesResult.loading ? (
+                    "Loading..."
+                ) : notesResult.error ? (
+                    "Error :("
+                ) : (
+                    <List>
+                        {notesResult.data.noteWithIds.map((note, index) => (
+                            <ListItem
+                                button
+                                key={index}
+                                onClick={() => onClick(note.id)}
+                            >
+                                <Typography style={{ flexGrow: 1 }}>
+                                    {note.filename}
+                                </Typography>
+                                <IconButton size="small" color="secondary">
+                                    <Launch />
+                                </IconButton>
+                            </ListItem>
+                        ))}
+                    </List>
+                )}
             </div>
         </Drawer>
     );

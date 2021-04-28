@@ -1,6 +1,7 @@
 const passwordHash = require("password-hash");
 const crypto = require("crypto");
 const { GraphQLDateTime } = require("graphql-iso-date");
+const sequelize = require("sequelize");
 
 const resolvers = {
     Date: GraphQLDateTime,
@@ -70,6 +71,26 @@ const resolvers = {
                 },
             });
         },
+        noteWithIds: async (root, { ids }, { models, loggedIn, user }) => {
+            if (!loggedIn) return null;
+            const ord = [sequelize.literal(`field(id, ${ids})`)];
+            let notes = await models.Note.findAll({
+                where: {
+                    id: ids,
+                    user_id: user.id,
+                },
+                order: ord,
+            });
+            // let ret = new Array();
+            // ids.map((id) => {
+            //     ret.push(
+            //         notes.find((note) => {
+            //             if (note.id === id) return note;
+            //         })
+            //     );
+            // });
+            return notes;
+        },
     },
     Note: {
         user: async (root, args, { models, loggedIn, user }) => {
@@ -120,6 +141,16 @@ const resolvers = {
                     user_id: Number(user.id),
                 },
             });
+        },
+        deleteNote: async (root, { id }, { models, loggedIn, user }) => {
+            if (!loggedIn) return false;
+            await models.Note.destroy({
+                where: {
+                    id,
+                    user_id: user.id,
+                },
+            });
+            return true;
         },
     },
 };

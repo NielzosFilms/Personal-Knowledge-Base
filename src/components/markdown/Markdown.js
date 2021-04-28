@@ -16,6 +16,8 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { useHistory, useParams } from "react-router-dom";
 import { getDateString } from "../../services/dateFunctions";
+import ToolbarCustom from "../ToolbarCustom";
+import { addNoteToHistory } from "../../services/noteHistory";
 
 const NOTE_QUERY = gql`
     query Note($id: Int!) {
@@ -51,9 +53,6 @@ const useStyles = makeStyles((theme) => ({
     },
     grow: {
         flexGrow: 1,
-    },
-    appBar: {
-        top: 75,
     },
     info: {
         marginTop: theme.spacing(1),
@@ -112,6 +111,7 @@ export default function MarkdownNew({ isNew = false }) {
 
     React.useEffect(() => {
         if (createNoteResult.data?.createNote) {
+            addNoteToHistory(createNoteResult.data.createNote.id);
             history.push(`/notes/edit/${createNoteResult.data.createNote.id}`);
         }
     }, [createNoteResult.loading]);
@@ -230,13 +230,7 @@ export default function MarkdownNew({ isNew = false }) {
 
     return (
         <>
-            <AppBar
-                color="inherit"
-                position="sticky"
-                className={classes.appBar}
-            >
-                <Toolbar variant="dense">{toolbarButtons()}</Toolbar>
-            </AppBar>
+            <ToolbarCustom divider={false}>{toolbarButtons()}</ToolbarCustom>
             <Box display="flex" justifyContent="start">
                 <Typography variant="body2" className={classes.info}>
                     Created at:{" "}
