@@ -12,9 +12,11 @@ const host = process.env.REACT_APP_APOLLO_CLIENT_HOST || process.env.HOST;
 const port =
     process.env.REACT_APP_APOLLO_CLIENT_PORT || process.env.SERVER_PORT;
 
+console.log(process.env.NODE_ENV);
+
 const httpLink = createHttpLink({
     uri: `http://${host || "localhost"}:${port || "8080"}/graphql`,
-    credentials: "include",
+    ...(process.env.NODE_ENV === "production" && { credentials: "include" }),
 });
 
 const authLink = setContext((_, { headers }) => {
