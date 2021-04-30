@@ -1,5 +1,6 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import gfm from "remark-gfm";
 import {
     TextField,
     IconButton,
@@ -207,12 +208,12 @@ export default function MarkdownNew({ isNew = false }) {
                         />
                     </Grid>
                     <Grid item xs={6}>
-                        <ReactMarkdown>{text}</ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[gfm]} children={text} />
                     </Grid>
                 </Grid>
             );
         } else {
-            return <ReactMarkdown>{text}</ReactMarkdown>;
+            return <ReactMarkdown remarkPlugins={[gfm]} children={text} />;
         }
     };
 

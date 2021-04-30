@@ -17,7 +17,7 @@ export default function Layout({ children, setUpdateTime }) {
     return (
         <>
             <TopBar setUpdateTime={setUpdateTime} />
-            <LeftMenu />
+            {/* <LeftMenu /> */}
             <main className={classes.root}>
                 <ContentWrapper>{children}</ContentWrapper>
             </main>
