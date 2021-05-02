@@ -20,6 +20,7 @@ import {
 	TableHead,
 	TableCell,
 	Link as Linkurl,
+	TextareaAutosize,
 } from "@material-ui/core";
 import {
 	Edit,
@@ -114,6 +115,10 @@ const useStyles = makeStyles((theme) => ({
 			borderBottom: `1px solid ${theme.palette.background.paper}`,
 		},
 	},
+	textArea: {
+		resize: "none",
+		width: "100%",
+	},
 }));
 
 export default function MarkdownNew({isNew = false}) {
@@ -141,7 +146,7 @@ export default function MarkdownNew({isNew = false}) {
 	const [savedText, setSavedText] = React.useState("");
 	const [savedFilename, setSavedFilename] = React.useState("");
 	const [edit, setEdit] = React.useState(isNew);
-	const [cursor, setCursor] = React.useState(0);
+	const [cursor, setCursor] = React.useState({start: 0, end: 0});
 	const [insertOpen, setInsertOpen] = React.useState(false);
 	const history = useHistory();
 
@@ -167,6 +172,10 @@ export default function MarkdownNew({isNew = false}) {
 	const handleSave = async () => {
 		if (filename !== savedFilename || text !== savedText) {
 			if (isNew) {
+				if (!filename || filename === "") {
+					alert("The filename cannot be empty.");
+					return;
+				}
 				createNote({
 					variables: {
 						filename,
@@ -222,6 +231,67 @@ export default function MarkdownNew({isNew = false}) {
 	};
 
 	const toolbarButtons = () => {
+		const insertButtons = [
+			{
+				display: (
+					<>
+						<Link /> Link/Url
+					</>
+				),
+				onClick: () => handleTextInsert("[TEXT](URL)\n"),
+			},
+			{
+				display: (
+					<>
+						<Toc /> Table
+					</>
+				),
+				onClick: () =>
+					handleTextInsert(
+						"| NAME | NAME |\n| --- | --- |\n| VALUE | VALUE |\n"
+					),
+			},
+			{
+				display: (
+					<>
+						<FormatListBulleted /> Unordered list
+					</>
+				),
+				onClick: () => handleTextInsert("- ITEM\n- ITEM\n- ITEM\n"),
+			},
+			{
+				display: (
+					<>
+						<FormatListNumbered /> Ordered list
+					</>
+				),
+				onClick: () => handleTextInsert("1. ITEM\n1. ITEM\n1. ITEM\n"),
+			},
+			{
+				display: (
+					<>
+						<Remove /> Divider
+					</>
+				),
+				onClick: () => handleTextInsert("---\n"),
+			},
+			{
+				display: (
+					<>
+						<Code /> Codeblock
+					</>
+				),
+				onClick: () => handleTextInsert("```LANGUAGE\nCODE\n```\n"),
+			},
+			{
+				display: (
+					<>
+						<InsertPhoto /> Image
+					</>
+				),
+				onClick: () => alert("Not a function yet :("),
+			},
+		];
 		return (
 			<>
 				<Box
@@ -275,61 +345,11 @@ export default function MarkdownNew({isNew = false}) {
 								open={Boolean(insertOpen)}
 								onClose={() => setInsertOpen(null)}
 							>
-								<MenuItem
-									onClick={() =>
-										handleTextInsert("[TEXT](URL)\n")
-									}
-								>
-									<Link /> Link/Url
-								</MenuItem>
-								<MenuItem
-									onClick={() =>
-										handleTextInsert(
-											"| NAME | NAME |\n| --- | --- |\n| VALUE | VALUE |\n"
-										)
-									}
-								>
-									<Toc /> Table
-								</MenuItem>
-								<MenuItem
-									onClick={() =>
-										handleTextInsert(
-											"- ITEM\n- ITEM\n- ITEM\n"
-										)
-									}
-								>
-									<FormatListBulleted /> Unordered list
-								</MenuItem>
-								<MenuItem
-									onClick={() =>
-										handleTextInsert(
-											"1. ITEM\n1. ITEM\n1. ITEM\n"
-										)
-									}
-								>
-									<FormatListNumbered /> Ordered list
-								</MenuItem>
-								<MenuItem
-									onClick={() => handleTextInsert("---\n")}
-								>
-									<Remove /> Divider
-								</MenuItem>
-								<MenuItem
-									onClick={() =>
-										handleTextInsert(
-											"```LANGUAGE\nCODE\n```\n"
-										)
-									}
-								>
-									<Code /> Codeblock
-								</MenuItem>
-								<MenuItem
-									onClick={() =>
-										alert("Not a function yet :(")
-									}
-								>
-									<InsertPhoto /> Image
-								</MenuItem>
+								{insertButtons.map((button) => (
+									<MenuItem onClick={button.onClick}>
+										{button.display}
+									</MenuItem>
+								))}
 							</Menu>
 						</>
 					)}
@@ -404,7 +424,7 @@ export default function MarkdownNew({isNew = false}) {
 		if (edit) {
 			return (
 				<Grid container spacing={2}>
-					<Grid item xs={6}>
+					<Grid item xs={12} sm={6}>
 						<TextField
 							variant="filled"
 							multiline
@@ -425,7 +445,7 @@ export default function MarkdownNew({isNew = false}) {
 							}}
 						/>
 					</Grid>
-					<Grid item xs={6}>
+					<Grid item xs="auto" sm={6}>
 						<ReactMarkdown
 							remarkPlugins={[gfm]}
 							rehypePlugins={[rehypeRaw]}

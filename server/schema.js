@@ -1,4 +1,4 @@
-const { gql } = require("apollo-server-express");
+const {gql} = require("apollo-server-express");
 
 const typeDefs = gql(`
     scalar Date
@@ -31,7 +31,7 @@ const typeDefs = gql(`
         getAuthenticatedUser: User
         logout: Boolean
         users: [User]
-        notes: [Note]
+        notes(search: String): [Note]
         noteById(id: Int!): Note
         noteWithIds(ids: [Int]!): [Note]
     }

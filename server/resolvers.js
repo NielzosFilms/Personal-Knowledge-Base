@@ -2,6 +2,7 @@ const passwordHash = require("password-hash");
 const crypto = require("crypto");
 const {GraphQLDateTime} = require("graphql-iso-date");
 const sequelize = require("sequelize");
+const {Op} = sequelize;
 
 const resolvers = {
 	Date: GraphQLDateTime,
@@ -54,10 +55,15 @@ const resolvers = {
 			if (!loggedIn) return null;
 			return models.User.findAll();
 		},
-		notes: async (root, args, {models, loggedIn, user}) => {
+		notes: async (root, {search}, {models, loggedIn, user}) => {
 			if (!loggedIn) return null;
 			return models.Note.findAll({
 				where: {
+					...(search && {
+						filename: {
+							[sequelize.Op.substring]: search,
+						},
+					}),
 					user_id: user.id,
 				},
 			});
