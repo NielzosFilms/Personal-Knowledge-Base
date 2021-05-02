@@ -168,6 +168,8 @@ export default function MarkdownNew({ isNew = false }) {
                         content: text,
                     },
                 });
+                setSavedFilename(filename);
+                setSavedText(text);
             } else {
                 updateNote({
                     variables: {

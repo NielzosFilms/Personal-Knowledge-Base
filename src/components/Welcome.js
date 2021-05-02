@@ -7,6 +7,7 @@ const MESSAGES = [
     "Remember to take a break!",
     "Learning never stops!",
     "Making notes can help you process things!",
+    "Stay hydrated ♡",
 ];
 
 export default function Welcome() {

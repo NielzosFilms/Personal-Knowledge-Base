@@ -133,8 +133,8 @@ export default function List() {
                             <TableRow
                                 key={note.id}
                                 hover
-                                // onClick={() => handleEditClick(note.id)}
-                                // className={classes.tableRow}
+                                onClick={() => handleEditClick(note.id)}
+                                className={classes.tableRow}
                             >
                                 <TableCell component="th" scope="row">
                                     {note.filename}
