@@ -24,11 +24,19 @@ module.exports = {
 				type: Sequelize.TEXT,
 				allowNull: true,
 			},
+			folder_id: {
+				type: Sequelize.INTEGER,
+				allowNull: false,
+				references: {
+					model: "folders",
+					key: "id",
+				},
+			},
 			user_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
 				references: {
-					model: "Users",
+					model: "users",
 					key: "id",
 				},
 			},

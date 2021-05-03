@@ -16,6 +16,7 @@ import {
 	Box,
 	TextField,
 	InputAdornment,
+	Link,
 } from "@material-ui/core";
 import {
 	Edit,
@@ -26,6 +27,7 @@ import {
 	Sync,
 	GetApp,
 	Close,
+	Folder,
 } from "@material-ui/icons";
 import {getDateString} from "../../services/dateFunctions";
 import {useHistory} from "react-router-dom";
@@ -34,12 +36,36 @@ import ToolbarCustom from "../ToolbarCustom";
 import {addNoteToHistory} from "../../services/noteHistory";
 import {handleDownload} from "./downloadHandler";
 
-const NOTE_QUERY = gql`
-	query Notes($search: String) {
-		notes(search: $search) {
+// const NOTE_QUERY = gql`
+// 	query Notes($search: String) {
+// 		notes(search: $search) {
+// 			id
+// 			filename
+// 			content
+// 			createdAt
+// 			updatedAt
+// 		}
+// 	}
+// `;
+
+const FOLDER_QUERY = gql`
+	query Folder($id: Int) {
+		folderByIdOrRoot(id: $id) {
 			id
-			filename
-			content
+			name
+			subFolders {
+				id
+				name
+				ancestry
+				createdAt
+				updatedAt
+			}
+			notes {
+				id
+				filename
+				createdAt
+				updatedAt
+			}
 			createdAt
 			updatedAt
 		}
@@ -67,27 +93,33 @@ const useStyles = makeStyles((theme) => ({
 		marginTop: theme.spacing(1),
 		marginBottom: theme.spacing(1),
 	},
+	folderIcon: {
+		marginRight: theme.spacing(1),
+	},
 }));
 
 export default function List() {
 	const [search, setSearch] = React.useState("");
-	const {loading, error, data, refetch} = useQuery(NOTE_QUERY, {
+	const [folderId, setFolderId] = React.useState(null);
+	const {loading, error, data, refetch} = useQuery(FOLDER_QUERY, {
 		variables: {
-			search,
+			id: folderId,
 		},
 	});
 	const [deleteNote, deleteNoteResult] = useMutation(NOTE_DELETE, {
-		refetchQueries: [{query: NOTE_QUERY}],
+		refetchQueries: [{query: FOLDER_QUERY}],
 	});
+	const [folders, setFolders] = React.useState([]);
 	const [notes, setNotes] = React.useState([]);
 	const history = useHistory();
 	const classes = useStyles();
 
 	React.useEffect(() => {
-		if (data?.notes) {
-			console.log("setNotes LIST");
-			console.log(data.notes);
-			setNotes(data.notes);
+		if (data?.folderByIdOrRoot) {
+			// console.log("setNotes LIST");
+			console.log(data.folderByIdOrRoot);
+			setNotes(data.folderByIdOrRoot.notes);
+			setFolders(data.folderByIdOrRoot.subFolders);
 		}
 	}, [loading, search]);
 
@@ -165,6 +197,44 @@ export default function List() {
 								<TableCell />
 							</TableRow>
 						)}
+						{folderId && (
+							<TableRow
+								hover
+								className={classes.tableRow}
+								onClick={() => setFolderId(null)}
+							>
+								<TableCell component="th" scope="row">
+									<Link>Back...</Link>
+								</TableCell>
+								<TableCell />
+								<TableCell />
+								<TableCell />
+							</TableRow>
+						)}
+						{folders.map((folder) => (
+							<TableRow
+								key={folder.id}
+								hover
+								className={classes.tableRow}
+								onClick={() => setFolderId(folder.id)}
+							>
+								<TableCell component="th" scope="row">
+									<Box display="flex" justifyItems="center">
+										<Folder
+											className={classes.folderIcon}
+										/>{" "}
+										{folder.name}
+									</Box>
+								</TableCell>
+								<TableCell align="right">
+									{getDateString(folder.createdAt)}
+								</TableCell>
+								<TableCell align="right">
+									{getDateString(folder.updatedAt)}
+								</TableCell>
+								<TableCell align="right"></TableCell>
+							</TableRow>
+						))}
 						{notes.map((note) => (
 							<TableRow
 								key={note.id}

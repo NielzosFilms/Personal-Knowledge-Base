@@ -1,7 +1,7 @@
 "use strict";
 const {Model} = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-	class Note extends Model {
+	class Folder extends Model {
 		/**
 		 * Helper method for defining associations.
 		 * This method is not a part of Sequelize lifecycle.
@@ -9,23 +9,17 @@ module.exports = (sequelize, DataTypes) => {
 		 */
 		static associate(models) {
 			// define association here
-			this.belongsTo(models.User, {foreignKey: "user_id"});
-			this.belongsTo(models.Folder, {foreignKey: "folder_id"});
+			this.hasMany(models.Note, {foreignKey: "folder_id"});
 		}
 	}
-	Note.init(
+	Folder.init(
 		{
-			filename: {
+			ancestry: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				unique: true,
 			},
-			content: {
-				type: DataTypes.TEXT,
-				allowNull: true,
-			},
-			folder_id: {
-				type: DataTypes.INTEGER,
+			name: {
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			user_id: {
@@ -36,8 +30,8 @@ module.exports = (sequelize, DataTypes) => {
 		{
 			sequelize,
 			paranoid: true,
-			modelName: "Note",
+			modelName: "Folder",
 		}
 	);
-	return Note;
+	return Folder;
 };

@@ -14,6 +14,18 @@ const typeDefs = gql(`
         id: Int!
         filename: String!
         content: String!
+        folder: Folder!
+        user: User
+        createdAt: Date!
+        updatedAt: Date!
+    }
+
+    type Folder {
+        id: Int!
+        ancestry: String!
+        name: String!
+        notes: [Note]
+        subFolders: [Folder]
         user: User
         createdAt: Date!
         updatedAt: Date!
@@ -34,6 +46,9 @@ const typeDefs = gql(`
         notes(search: String): [Note]
         noteById(id: Int!): Note
         noteWithIds(ids: [Int]!): [Note]
+
+        folders(ancestry: String): [Folder]
+        folderByIdOrRoot(id: Int): Folder
     }
 
     type Mutation {

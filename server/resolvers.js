@@ -90,6 +90,33 @@ const resolvers = {
 			});
 			return notes;
 		},
+		folders: async (root, {ancestry}, {models, loggedIn, user}) => {
+			if (!loggedIn) return null;
+			return models.Folder.findAll({
+				where: {
+					...(ancestry && {ancestry}),
+					user_id: Number(user.id),
+				},
+			});
+		},
+		folderByIdOrRoot: async (root, {id}, {models, loggedIn, user}) => {
+			if (!loggedIn) return null;
+			if (id) {
+				return models.Folder.findOne({
+					where: {
+						id,
+						user_id: Number(user.id),
+					},
+				});
+			} else {
+				return models.Folder.findOne({
+					where: {
+						ancestry: "root/",
+						user_id: Number(user.id),
+					},
+				});
+			}
+		},
 	},
 	Note: {
 		user: async (root, args, {models, loggedIn, user}) => {
@@ -97,6 +124,43 @@ const resolvers = {
 			return await models.User.findOne({
 				where: {
 					id: root.dataValues.user_id,
+				},
+			});
+		},
+		folder: async (root, args, {models, loggedIn, user}) => {
+			if (!loggedIn) return null;
+			return await models.Folder.findOne({
+				where: {
+					id: root.dataValues.folder_id,
+					user_id: Number(user.id),
+				},
+			});
+		},
+	},
+	Folder: {
+		user: async (root, args, {models, loggedIn, user}) => {
+			if (!loggedIn) return null;
+			return await models.User.findOne({
+				where: {
+					id: root.dataValues.user_id,
+				},
+			});
+		},
+		notes: async (root, args, {models, loggedIn, user}) => {
+			if (!loggedIn) return null;
+			return await models.Note.findAll({
+				where: {
+					folder_id: root.dataValues.id,
+					user_id: Number(user.id),
+				},
+			});
+		},
+		subFolders: async (root, args, {models, loggedIn, user}) => {
+			if (!loggedIn) return null;
+			return await models.Folder.findAll({
+				where: {
+					ancestry: `${root.dataValues.ancestry}${root.dataValues.id}/`,
+					user_id: Number(user.id),
 				},
 			});
 		},
@@ -108,9 +172,16 @@ const resolvers = {
 			{models, loggedIn, user}
 		) => {
 			if (!loggedIn) return null;
+			const root_folder = await models.Folder.findOne({
+				where: {
+					ancestry: "ROOT",
+					user_id: Number(user.id),
+				},
+			});
 			const note = await models.Note.create({
 				filename,
 				content,
+				folder_id: Number(root_folder.id),
 				user_id: Number(user.id),
 			});
 			await note.save();
