@@ -169,16 +169,25 @@ export default function List() {
 							<TableRow
 								key={note.id}
 								hover
-								onClick={() => handleEditClick(note.id)}
 								className={classes.tableRow}
 							>
-								<TableCell component="th" scope="row">
+								<TableCell
+									component="th"
+									scope="row"
+									onClick={() => handleEditClick(note.id)}
+								>
 									{note.filename}
 								</TableCell>
-								<TableCell align="right">
+								<TableCell
+									align="right"
+									onClick={() => handleEditClick(note.id)}
+								>
 									{getDateString(note.createdAt)}
 								</TableCell>
-								<TableCell align="right">
+								<TableCell
+									align="right"
+									onClick={() => handleEditClick(note.id)}
+								>
 									{getDateString(note.updatedAt)}
 								</TableCell>
 								<TableCell align="right">

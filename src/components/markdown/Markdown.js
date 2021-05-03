@@ -416,7 +416,11 @@ export default function MarkdownNew({isNew = false}) {
 			);
 		},
 		a({children, ...props}) {
-			return <Linkurl {...props}>{children}</Linkurl>;
+			return (
+				<Linkurl target="_blank" {...props}>
+					{children}
+				</Linkurl>
+			);
 		},
 	};
 
