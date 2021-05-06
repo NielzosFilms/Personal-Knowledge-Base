@@ -101,7 +101,7 @@ const resolvers = {
 		},
 		folderByIdOrRoot: async (root, {id}, {models, loggedIn, user}) => {
 			if (!loggedIn) return null;
-			if (id) {
+			if (id && id !== "root") {
 				return models.Folder.findOne({
 					where: {
 						id,
@@ -116,6 +116,19 @@ const resolvers = {
 					},
 				});
 			}
+		},
+		folderByAncestry: async (
+			root,
+			{ancestry},
+			{models, loggedIn, user}
+		) => {
+			if (!loggedIn) return null;
+			return models.Folder.findOne({
+				where: {
+					ancestry,
+					user_id: Number(user.id),
+				},
+			});
 		},
 	},
 	Note: {
@@ -174,7 +187,7 @@ const resolvers = {
 			if (!loggedIn) return null;
 			const root_folder = await models.Folder.findOne({
 				where: {
-					ancestry: "ROOT",
+					ancestry: "root/",
 					user_id: Number(user.id),
 				},
 			});

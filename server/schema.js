@@ -49,6 +49,7 @@ const typeDefs = gql(`
 
         folders(ancestry: String): [Folder]
         folderByIdOrRoot(id: Int): Folder
+        folderByAncestry(ancestry: String!): Folder
     }
 
     type Mutation {

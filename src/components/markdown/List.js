@@ -17,6 +17,8 @@ import {
 	TextField,
 	InputAdornment,
 	Link,
+	Breadcrumbs,
+	Typography,
 } from "@material-ui/core";
 import {
 	Edit,
@@ -30,7 +32,7 @@ import {
 	Folder,
 } from "@material-ui/icons";
 import {getDateString} from "../../services/dateFunctions";
-import {useHistory} from "react-router-dom";
+import {useHistory, useParams} from "react-router-dom";
 import {makeStyles} from "@material-ui/core/styles";
 import ToolbarCustom from "../ToolbarCustom";
 import {addNoteToHistory} from "../../services/noteHistory";
@@ -49,8 +51,8 @@ import {handleDownload} from "./downloadHandler";
 // `;
 
 const FOLDER_QUERY = gql`
-	query Folder($id: Int) {
-		folderByIdOrRoot(id: $id) {
+	query Folder($ancestry: String!) {
+		folderByAncestry(ancestry: $ancestry) {
 			id
 			name
 			subFolders {
@@ -96,14 +98,21 @@ const useStyles = makeStyles((theme) => ({
 	folderIcon: {
 		marginRight: theme.spacing(1),
 	},
+	breadcrumbs: {
+		marginBottom: theme.spacing(1),
+		marginLeft: theme.spacing(1),
+	},
+	link: {
+		cursor: "pointer",
+	},
 }));
 
 export default function List() {
 	const [search, setSearch] = React.useState("");
-	const [folderId, setFolderId] = React.useState(null);
+	const [ancestry, setAncestry] = React.useState("root/");
 	const {loading, error, data, refetch} = useQuery(FOLDER_QUERY, {
 		variables: {
-			id: folderId,
+			ancestry,
 		},
 	});
 	const [deleteNote, deleteNoteResult] = useMutation(NOTE_DELETE, {
@@ -111,21 +120,51 @@ export default function List() {
 	});
 	const [folders, setFolders] = React.useState([]);
 	const [notes, setNotes] = React.useState([]);
+	const [crums, setCrums] = React.useState([]);
 	const history = useHistory();
 	const classes = useStyles();
 
 	React.useEffect(() => {
-		if (data?.folderByIdOrRoot) {
+		if (data?.folderByAncestry) {
 			// console.log("setNotes LIST");
-			console.log(data.folderByIdOrRoot);
-			setNotes(data.folderByIdOrRoot.notes);
-			setFolders(data.folderByIdOrRoot.subFolders);
+			console.log(data.folderByAncestry);
+			setNotes(data.folderByAncestry.notes);
+			setFolders(data.folderByAncestry.subFolders);
 		}
-	}, [loading, search]);
+	}, [loading, data]);
 
 	React.useEffect(() => {
 		refetch();
-	}, [search]);
+	}, [search, ancestry]);
+
+	React.useEffect(() => {
+		let tmp_crums = [];
+		let tmp_ancestry = "";
+		ancestry.split("/").map((crum, index) => {
+			if (crum === "") return;
+			tmp_ancestry = `${tmp_ancestry}${crum}/`;
+
+			let new_crum = {};
+			if (crum === "root") {
+				new_crum = {title: "Notes", ancestry: tmp_ancestry};
+			} else {
+				const folder = folders.find(
+					(folder) => folder.ancestry === tmp_ancestry
+				);
+				new_crum = {
+					title: folder?.name || "NULL",
+					ancestry: tmp_ancestry,
+				};
+			}
+			if (crums[index] && crums[index].ancestry === tmp_ancestry) {
+				tmp_crums.push(crums[index]);
+			} else {
+				tmp_crums.push(new_crum);
+			}
+		});
+		setCrums(tmp_crums);
+		console.log(tmp_crums);
+	}, [ancestry]);
 
 	if (error) {
 		return <>Error :(</>;
@@ -176,6 +215,22 @@ export default function List() {
 					<Sync />
 				</IconButton>
 			</ToolbarCustom>
+			<Breadcrumbs className={classes.breadcrumbs}>
+				{crums.map((crum, index) => {
+					if (index === crums.length - 1) {
+						return <Typography>{crum.title}</Typography>;
+					} else {
+						return (
+							<Link
+								className={classes.link}
+								onClick={() => setAncestry(crum.ancestry)}
+							>
+								{crum.title}
+							</Link>
+						);
+					}
+				})}
+			</Breadcrumbs>
 			<TableContainer component={Paper}>
 				<Table>
 					<TableHead>
@@ -197,26 +252,27 @@ export default function List() {
 								<TableCell />
 							</TableRow>
 						)}
-						{folderId && (
-							<TableRow
-								hover
-								className={classes.tableRow}
-								onClick={() => setFolderId(null)}
-							>
-								<TableCell component="th" scope="row">
-									<Link>Back...</Link>
-								</TableCell>
-								<TableCell />
-								<TableCell />
-								<TableCell />
-							</TableRow>
-						)}
+						{/* <TableRow hover className={classes.tableRow}>
+							<TableCell>
+								<Link
+									onClick={() => {
+										setAncestry("root/");
+										refetch();
+									}}
+								>
+									Back...
+								</Link>
+							</TableCell>
+							<TableCell />
+							<TableCell />
+							<TableCell />
+						</TableRow> */}
 						{folders.map((folder) => (
 							<TableRow
 								key={folder.id}
 								hover
 								className={classes.tableRow}
-								onClick={() => setFolderId(folder.id)}
+								onClick={() => setAncestry(folder.ancestry)}
 							>
 								<TableCell component="th" scope="row">
 									<Box display="flex" justifyItems="center">
