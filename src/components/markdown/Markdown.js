@@ -65,8 +65,12 @@ const NOTE_QUERY = gql`
 `;
 
 const NOTE_CREATE = gql`
-	mutation CreateNote($filename: String!, $content: String) {
-		createNote(filename: $filename, content: $content) {
+	mutation CreateNote($filename: String!, $content: String, $folderId: Int) {
+		createNote(
+			filename: $filename
+			content: $content
+			folderId: $folderId
+		) {
 			id
 		}
 	}
@@ -180,6 +184,8 @@ export default function MarkdownNew({isNew = false}) {
 					variables: {
 						filename,
 						content: text,
+						folderId:
+							Number(localStorage.getItem("folderId")) || null,
 					},
 				});
 				setSavedFilename(filename);

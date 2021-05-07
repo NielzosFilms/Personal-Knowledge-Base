@@ -19,17 +19,24 @@ import {
 	Link,
 	Breadcrumbs,
 	Typography,
+	Dialog,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
 } from "@material-ui/core";
 import {
 	Edit,
 	Launch,
 	DeleteOutline,
-	AddBox,
-	Add,
-	Sync,
-	GetApp,
+	NoteAddOutlined,
+	Refresh,
+	GetAppOutlined,
 	Close,
 	Folder,
+	CreateNewFolderOutlined,
+	EditOutlined,
+	SaveOutlined,
 } from "@material-ui/icons";
 import {getDateString} from "../../services/dateFunctions";
 import {useHistory, useParams} from "react-router-dom";
@@ -37,6 +44,7 @@ import {makeStyles} from "@material-ui/core/styles";
 import ToolbarCustom from "../ToolbarCustom";
 import {addNoteToHistory} from "../../services/noteHistory";
 import {handleDownload} from "./downloadHandler";
+import useHotkeys from "@reecelucas/react-use-hotkeys";
 
 // const NOTE_QUERY = gql`
 // 	query Notes($search: String) {
@@ -51,10 +59,11 @@ import {handleDownload} from "./downloadHandler";
 // `;
 
 const FOLDER_QUERY = gql`
-	query Folder($ancestry: String!) {
-		folderByAncestry(ancestry: $ancestry) {
+	query Folder($id: Int) {
+		folderByIdOrRoot(id: $id) {
 			id
 			name
+			ancestry
 			subFolders {
 				id
 				name
@@ -77,6 +86,32 @@ const FOLDER_QUERY = gql`
 const NOTE_DELETE = gql`
 	mutation Delete($id: Int!) {
 		deleteNote(id: $id)
+	}
+`;
+
+const CREATE_FOLDER = gql`
+	mutation CreateFolder($ancestry: String!, $name: String!) {
+		createFolder(ancestry: $ancestry, name: $name) {
+			id
+			name
+			ancestry
+		}
+	}
+`;
+
+const UPDATE_FOLDER = gql`
+	mutation UpdateFolder($id: Int!, $ancestry: String, $name: String) {
+		updateFolder(id: $id, ancestry: $ancestry, name: $name) {
+			id
+			name
+			ancestry
+		}
+	}
+`;
+
+const DELETE_FOLDER = gql`
+	mutation DeleteFolder($id: Int!) {
+		deleteFolder(id: $id)
 	}
 `;
 
@@ -105,66 +140,67 @@ const useStyles = makeStyles((theme) => ({
 	link: {
 		cursor: "pointer",
 	},
+	folderActions: {
+		display: "flex",
+		justifyContent: "space-between",
+	},
 }));
 
 export default function List() {
 	const [search, setSearch] = React.useState("");
-	const [ancestry, setAncestry] = React.useState("root/");
+	const [ancestry, setAncestry] = React.useState("");
+	const [crums, setCrums] = React.useState(
+		JSON.parse(localStorage.getItem("breadCrums")) || []
+	);
+	const [folderId, setFolderId] = React.useState(
+		crums[crums.length - 1]?.id || null
+	);
 	const {loading, error, data, refetch} = useQuery(FOLDER_QUERY, {
 		variables: {
-			ancestry,
+			id: Number(folderId),
 		},
 	});
-	const [deleteNote, deleteNoteResult] = useMutation(NOTE_DELETE, {
-		refetchQueries: [{query: FOLDER_QUERY}],
-	});
+	const [deleteNote, deleteNoteResult] = useMutation(NOTE_DELETE);
+	const [createFolder, createFolderRes] = useMutation(CREATE_FOLDER);
+
 	const [folders, setFolders] = React.useState([]);
 	const [notes, setNotes] = React.useState([]);
-	const [crums, setCrums] = React.useState([]);
+	const [addFolderOpen, setAddFolderOpen] = React.useState(false);
+	const [folderName, setFolderName] = React.useState("");
 	const history = useHistory();
 	const classes = useStyles();
 
 	React.useEffect(() => {
-		if (data?.folderByAncestry) {
+		if (data?.folderByIdOrRoot) {
 			// console.log("setNotes LIST");
-			console.log(data.folderByAncestry);
-			setNotes(data.folderByAncestry.notes);
-			setFolders(data.folderByAncestry.subFolders);
+			// console.log(data.folderByIdOrRoot);
+			setNotes(data.folderByIdOrRoot.notes);
+			setFolders(data.folderByIdOrRoot.subFolders);
+			setAncestry(data.folderByIdOrRoot.ancestry);
+			setFolderId(data.folderByIdOrRoot.id);
+
+			let tmp_crums = [];
+			crums.map((crum) => {
+				if (crum.id !== folderId) {
+					tmp_crums.push(crum);
+				}
+			});
+			if (folderId) {
+				localStorage.setItem("folderId", folderId);
+				tmp_crums.push({
+					title: data.folderByIdOrRoot.name,
+					ancestry: data.folderByIdOrRoot.ancestry,
+					id: folderId,
+				});
+			}
+			localStorage.setItem("breadCrums", JSON.stringify(tmp_crums));
+			setCrums(tmp_crums);
 		}
 	}, [loading, data]);
 
 	React.useEffect(() => {
 		refetch();
-	}, [search, ancestry]);
-
-	React.useEffect(() => {
-		let tmp_crums = [];
-		let tmp_ancestry = "";
-		ancestry.split("/").map((crum, index) => {
-			if (crum === "") return;
-			tmp_ancestry = `${tmp_ancestry}${crum}/`;
-
-			let new_crum = {};
-			if (crum === "root") {
-				new_crum = {title: "Notes", ancestry: tmp_ancestry};
-			} else {
-				const folder = folders.find(
-					(folder) => folder.ancestry === tmp_ancestry
-				);
-				new_crum = {
-					title: folder?.name || "NULL",
-					ancestry: tmp_ancestry,
-				};
-			}
-			if (crums[index] && crums[index].ancestry === tmp_ancestry) {
-				tmp_crums.push(crums[index]);
-			} else {
-				tmp_crums.push(new_crum);
-			}
-		});
-		setCrums(tmp_crums);
-		console.log(tmp_crums);
-	}, [ancestry]);
+	}, [search, folderId, createFolderRes.loading]);
 
 	if (error) {
 		return <>Error :(</>;
@@ -184,8 +220,177 @@ export default function List() {
 		refetch();
 	};
 
+	const handleCrumClick = (crum, index) => {
+		let tmp_crums = crums;
+		tmp_crums.splice(index);
+		setCrums(tmp_crums);
+		setFolderId(crum.id);
+	};
+
+	const handleFolderCreateOpen = () => {
+		setFolderName("");
+		setAddFolderOpen(true);
+	};
+
+	const handleFolderCreate = () => {
+		createFolder({
+			variables: {
+				ancestry: `${ancestry}${folderId}/`,
+				name: folderName,
+			},
+		});
+		setAddFolderOpen(false);
+	};
+
+	const FolderRow = ({folder, setFolderId, refetch}) => {
+		const [updateFolder, updateFolderRes] = useMutation(UPDATE_FOLDER);
+		const [deleteFolder, deleteFolderRes] = useMutation(DELETE_FOLDER, {
+			refetchQueries: [{query: FOLDER_QUERY}],
+		});
+		const [name, setName] = React.useState(folder.name);
+		const [edit, setEdit] = React.useState(false);
+
+		const handleClose = () => {
+			setEdit(false);
+		};
+
+		const handleOpen = () => {
+			setEdit(true);
+			setName(folder.name);
+		};
+
+		const handleSave = (e) => {
+			e.preventDefault();
+			updateFolder({
+				variables: {
+					id: folder.id,
+					name,
+				},
+			});
+			handleClose();
+		};
+
+		const handleDelete = () => {
+			if (
+				window.confirm(
+					`Are you sure you want to delete the folder named "${folder.name}"?\nThis will also remove all of the notes inside of this folder.`
+				)
+			) {
+				deleteFolder({
+					variables: {
+						id: folder.id,
+					},
+				});
+			}
+		};
+
+		return (
+			<TableRow key={folder.id} hover className={classes.tableRow}>
+				<TableCell component="th" scope="row">
+					<Box
+						display="flex"
+						justifyItems="center"
+						{...(!edit && {onClick: () => setFolderId(folder.id)})}
+					>
+						<Folder className={classes.folderIcon} />{" "}
+						{edit ? (
+							<form onSubmit={handleSave}>
+								<TextField
+									size="small"
+									color="secondary"
+									placeholder="Search..."
+									value={name}
+									autoFocus
+									onChange={(e) => setName(e.target.value)}
+									InputProps={{
+										endAdornment: (
+											<>
+												<IconButton
+													onClick={handleSave}
+													color="secondary"
+													size="small"
+												>
+													<SaveOutlined />
+												</IconButton>
+												<IconButton
+													onClick={handleClose}
+													color="secondary"
+													size="small"
+												>
+													<Close />
+												</IconButton>
+											</>
+										),
+									}}
+								/>
+							</form>
+						) : (
+							folder.name
+						)}
+					</Box>
+				</TableCell>
+				<TableCell align="right" onClick={() => setFolderId(folder.id)}>
+					{getDateString(folder.createdAt)}
+				</TableCell>
+				<TableCell align="right" onClick={() => setFolderId(folder.id)}>
+					{getDateString(folder.updatedAt)}
+				</TableCell>
+				<TableCell align="right">
+					<Box display="flex" justifyContent="flex-end">
+						<IconButton
+							color="secondary"
+							className={classes.actionButton}
+							size="small"
+							onClick={handleOpen}
+						>
+							<EditOutlined />
+						</IconButton>
+						<IconButton
+							onClick={handleDelete}
+							color="secondary"
+							className={
+								(classes.actionButton, classes.deleteButton)
+							}
+							size="small"
+						>
+							<DeleteOutline />
+						</IconButton>
+					</Box>
+				</TableCell>
+			</TableRow>
+		);
+	};
+
 	return (
 		<>
+			<Dialog open={addFolderOpen}>
+				<DialogTitle>Create folder</DialogTitle>
+				<DialogContent>
+					<TextField
+						autoFocus
+						label="Folder name"
+						value={folderName}
+						onChange={(e) => setFolderName(e.target.value)}
+						fullWidth
+					/>
+				</DialogContent>
+				<DialogActions className={classes.folderActions}>
+					<Button
+						variant="contained"
+						color="primary"
+						onClick={() => setAddFolderOpen(false)}
+					>
+						Close
+					</Button>
+					<Button
+						variant="contained"
+						color="primary"
+						onClick={handleFolderCreate}
+					>
+						Add
+					</Button>
+				</DialogActions>
+			</Dialog>
 			<ToolbarCustom>
 				<TextField
 					size="small"
@@ -209,10 +414,13 @@ export default function List() {
 					color="secondary"
 					onClick={() => history.push("/notes/new")}
 				>
-					<AddBox />
+					<NoteAddOutlined />
+				</IconButton>
+				<IconButton color="secondary" onClick={handleFolderCreateOpen}>
+					<CreateNewFolderOutlined />
 				</IconButton>
 				<IconButton color="secondary" onClick={() => refetch()}>
-					<Sync />
+					<Refresh />
 				</IconButton>
 			</ToolbarCustom>
 			<Breadcrumbs className={classes.breadcrumbs}>
@@ -223,7 +431,7 @@ export default function List() {
 						return (
 							<Link
 								className={classes.link}
-								onClick={() => setAncestry(crum.ancestry)}
+								onClick={() => handleCrumClick(crum, index)}
 							>
 								{crum.title}
 							</Link>
@@ -252,44 +460,12 @@ export default function List() {
 								<TableCell />
 							</TableRow>
 						)}
-						{/* <TableRow hover className={classes.tableRow}>
-							<TableCell>
-								<Link
-									onClick={() => {
-										setAncestry("root/");
-										refetch();
-									}}
-								>
-									Back...
-								</Link>
-							</TableCell>
-							<TableCell />
-							<TableCell />
-							<TableCell />
-						</TableRow> */}
 						{folders.map((folder) => (
-							<TableRow
-								key={folder.id}
-								hover
-								className={classes.tableRow}
-								onClick={() => setAncestry(folder.ancestry)}
-							>
-								<TableCell component="th" scope="row">
-									<Box display="flex" justifyItems="center">
-										<Folder
-											className={classes.folderIcon}
-										/>{" "}
-										{folder.name}
-									</Box>
-								</TableCell>
-								<TableCell align="right">
-									{getDateString(folder.createdAt)}
-								</TableCell>
-								<TableCell align="right">
-									{getDateString(folder.updatedAt)}
-								</TableCell>
-								<TableCell align="right"></TableCell>
-							</TableRow>
+							<FolderRow
+								folder={folder}
+								setFolderId={setFolderId}
+								refetch={refetch}
+							/>
 						))}
 						{notes.map((note) => (
 							<TableRow
@@ -342,7 +518,7 @@ export default function List() {
 											className={classes.actionButton}
 											size="small"
 										>
-											<GetApp />
+											<GetAppOutlined />
 										</IconButton>
 										<IconButton
 											onClick={() =>

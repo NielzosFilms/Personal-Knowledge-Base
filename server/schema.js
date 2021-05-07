@@ -53,9 +53,13 @@ const typeDefs = gql(`
     }
 
     type Mutation {
-        createNote(filename: String!, content: String): Note
+        createNote(filename: String!, content: String, folderId: Int): Note
         updateNote(id: Int!, filename: String, content: String): Note
         deleteNote(id: Int!): Boolean
+
+        createFolder(ancestry: String!, name: String!): Folder
+        updateFolder(id: Int!, ancestry: String, name: String): Folder
+        deleteFolder(id: Int!): Boolean
     }
 `);
 

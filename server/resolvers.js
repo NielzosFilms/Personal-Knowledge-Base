@@ -181,20 +181,30 @@ const resolvers = {
 	Mutation: {
 		createNote: async (
 			root,
-			{filename, content},
+			{filename, content, folderId},
 			{models, loggedIn, user}
 		) => {
 			if (!loggedIn) return null;
-			const root_folder = await models.Folder.findOne({
-				where: {
-					ancestry: "root/",
-					user_id: Number(user.id),
-				},
-			});
+			let folder;
+			if (folderId) {
+				folder = await models.Folder.findOne({
+					where: {
+						id: folderId,
+						user_id: Number(user.id),
+					},
+				});
+			} else {
+				folder = await models.Folder.findOne({
+					where: {
+						ancestry: "root/",
+						user_id: Number(user.id),
+					},
+				});
+			}
 			const note = await models.Note.create({
 				filename,
 				content,
-				folder_id: Number(root_folder.id),
+				folder_id: Number(folder.id),
 				user_id: Number(user.id),
 			});
 			await note.save();
@@ -230,7 +240,92 @@ const resolvers = {
 			await models.Note.destroy({
 				where: {
 					id,
-					user_id: user.id,
+					user_id: Number(user.id),
+				},
+			});
+			return true;
+		},
+		createFolder: async (
+			root,
+			{ancestry, name},
+			{models, loggedIn, user}
+		) => {
+			if (!loggedIn) return false;
+			const folder = await models.Folder.create({
+				ancestry,
+				name,
+				user_id: Number(user.id),
+			});
+			await folder.save();
+			return folder;
+		},
+		updateFolder: async (
+			root,
+			{id, ancestry, name},
+			{models, loggedIn, user}
+		) => {
+			if (!loggedIn) return false;
+			await models.Folder.update(
+				{
+					...(ancestry && {ancestry}),
+					...(name && {name}),
+				},
+				{
+					where: {
+						id,
+						user_id: Number(user.id),
+					},
+				}
+			);
+			return await models.Folder.findOne({
+				where: {
+					id,
+					user_id: Number(user.id),
+				},
+			});
+		},
+		deleteFolder: async (root, {id}, {models, loggedIn, user}) => {
+			if (!loggedIn) return false;
+			const folder_rm = await models.Folder.findOne({
+				where: {
+					id,
+					user_id: Number(user.id),
+				},
+			});
+
+			const sub_folders = await models.Folder.findAll({
+				where: {
+					ancestry: {
+						[sequelize.Op.substring]: `${folder_rm.ancestry}${id}/`,
+					},
+					user_id: Number(user.id),
+				},
+			});
+
+			let sub_folder_ids = [id];
+			sub_folders.map(async (sub_folder) => {
+				sub_folder_ids.push(sub_folder.id);
+			});
+			await models.Note.destroy({
+				where: {
+					folder_id: sub_folder_ids,
+					user_id: Number(user.id),
+				},
+			});
+
+			await models.Folder.destroy({
+				where: {
+					ancestry: {
+						[sequelize.Op.substring]: `${folder_rm.ancestry}${id}/`,
+					},
+					user_id: Number(user.id),
+				},
+			});
+
+			await models.Folder.destroy({
+				where: {
+					id,
+					user_id: Number(user.id),
 				},
 			});
 			return true;
