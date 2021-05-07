@@ -455,7 +455,7 @@ export default function MarkdownNew({isNew = false}) {
 							}}
 						/>
 					</Grid>
-					<Grid item xs="auto" sm={6}>
+					<Grid item xs={12} sm={6}>
 						<ReactMarkdown
 							remarkPlugins={[gfm]}
 							rehypePlugins={[rehypeRaw]}

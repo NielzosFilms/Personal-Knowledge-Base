@@ -285,79 +285,84 @@ export default function List() {
 		};
 
 		return (
-			<TableRow key={folder.id} hover className={classes.tableRow}>
-				<TableCell component="th" scope="row">
-					<Box
-						display="flex"
-						justifyItems="center"
-						{...(!edit && {onClick: () => setFolderId(folder.id)})}
+			<>
+				<Dialog open={edit}>
+					<DialogTitle>Edit folder</DialogTitle>
+					<DialogContent>
+						<TextField
+							autoFocus
+							label="Folder name"
+							value={name}
+							onChange={(e) => setName(e.target.value)}
+							fullWidth
+						/>
+					</DialogContent>
+					<DialogActions className={classes.folderActions}>
+						<Button
+							variant="contained"
+							color="primary"
+							onClick={handleClose}
+						>
+							Close
+						</Button>
+						<Button
+							variant="contained"
+							color="primary"
+							onClick={handleSave}
+						>
+							Save
+						</Button>
+					</DialogActions>
+				</Dialog>
+				<TableRow key={folder.id} hover className={classes.tableRow}>
+					<TableCell component="th" scope="row">
+						<Box
+							display="flex"
+							justifyItems="center"
+							{...(!edit && {
+								onClick: () => setFolderId(folder.id),
+							})}
+						>
+							<Folder className={classes.folderIcon} />{" "}
+							{folder.name}
+						</Box>
+					</TableCell>
+					<TableCell
+						align="right"
+						onClick={() => setFolderId(folder.id)}
 					>
-						<Folder className={classes.folderIcon} />{" "}
-						{edit ? (
-							<form onSubmit={handleSave}>
-								<TextField
-									size="small"
-									color="secondary"
-									placeholder="Search..."
-									value={name}
-									autoFocus
-									onChange={(e) => setName(e.target.value)}
-									InputProps={{
-										endAdornment: (
-											<>
-												<IconButton
-													onClick={handleSave}
-													color="secondary"
-													size="small"
-												>
-													<SaveOutlined />
-												</IconButton>
-												<IconButton
-													onClick={handleClose}
-													color="secondary"
-													size="small"
-												>
-													<Close />
-												</IconButton>
-											</>
-										),
-									}}
-								/>
-							</form>
-						) : (
-							folder.name
-						)}
-					</Box>
-				</TableCell>
-				<TableCell align="right" onClick={() => setFolderId(folder.id)}>
-					{getDateString(folder.createdAt)}
-				</TableCell>
-				<TableCell align="right" onClick={() => setFolderId(folder.id)}>
-					{getDateString(folder.updatedAt)}
-				</TableCell>
-				<TableCell align="right">
-					<Box display="flex" justifyContent="flex-end">
-						<IconButton
-							color="secondary"
-							className={classes.actionButton}
-							size="small"
-							onClick={handleOpen}
-						>
-							<EditOutlined />
-						</IconButton>
-						<IconButton
-							onClick={handleDelete}
-							color="secondary"
-							className={
-								(classes.actionButton, classes.deleteButton)
-							}
-							size="small"
-						>
-							<DeleteOutline />
-						</IconButton>
-					</Box>
-				</TableCell>
-			</TableRow>
+						{getDateString(folder.createdAt)}
+					</TableCell>
+					<TableCell
+						align="right"
+						onClick={() => setFolderId(folder.id)}
+					>
+						{getDateString(folder.updatedAt)}
+					</TableCell>
+					<TableCell align="right">
+						<Box display="flex" justifyContent="flex-end">
+							<IconButton
+								color="secondary"
+								className={classes.actionButton}
+								size="small"
+								onClick={handleOpen}
+							>
+								<EditOutlined />
+							</IconButton>
+							<IconButton
+								onClick={handleDelete}
+								color="secondary"
+								className={
+									(classes.actionButton, classes.deleteButton)
+								}
+								size="small"
+							>
+								<DeleteOutline />
+							</IconButton>
+						</Box>
+					</TableCell>
+				</TableRow>
+			</>
 		);
 	};
 
