@@ -11,10 +11,10 @@ module.exports = {
 		 *   isBetaMember: false
 		 * }], {});
 		 */
-		await queryInterface.bulkInsert("folders", [
+		await queryInterface.bulkInsert("Folders", [
 			{
-				ancestry: "ROOT",
-				name: "ROOT",
+				ancestry: "root/",
+				name: "Notes",
 				user_id: 1,
 			},
 		]);
@@ -27,6 +27,6 @@ module.exports = {
 		 * Example:
 		 * await queryInterface.bulkDelete('People', null, {});
 		 */
-		await queryInterface.bulkDelete("folders", null, {});
+		await queryInterface.bulkDelete("Folders", null, {});
 	},
 };
