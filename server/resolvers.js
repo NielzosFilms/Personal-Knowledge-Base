@@ -55,6 +55,14 @@ const resolvers = {
 			if (!loggedIn) return null;
 			return models.User.findAll();
 		},
+		userById: async (root, {id}, {models, loggedIn}) => {
+			if (!loggedIn) return null;
+			return models.User.findOne({
+				where: {
+					id,
+				},
+			});
+		},
 		notes: async (root, {search}, {models, loggedIn, user}) => {
 			if (!loggedIn) return null;
 			return models.Note.findAll({

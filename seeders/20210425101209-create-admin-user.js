@@ -17,6 +17,7 @@ module.exports = {
 			{
 				name: "admin",
 				password: passwordHash.generate("asdf"),
+				admin: true,
 			},
 		]);
 	},

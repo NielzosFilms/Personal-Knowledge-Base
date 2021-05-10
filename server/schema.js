@@ -6,6 +6,7 @@ const typeDefs = gql(`
     type User {
         id: Int!
         name: String!
+        admin: Boolean!
         createdAt: Date!
         updatedAt: Date!
     }
@@ -43,6 +44,7 @@ const typeDefs = gql(`
         getAuthenticatedUser: User
         logout: Boolean
         users: [User]
+        userById(id: Int!): User
         notes(search: String): [Note]
         noteById(id: Int!): Note
         noteWithIds(ids: [Int]!): [Note]

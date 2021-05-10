@@ -25,6 +25,11 @@ module.exports = {
 					this.setDataValue("password", passwordHash.generate(value));
 				},
 			},
+			admin: {
+				type: Sequelize.BOOLEAN,
+				allowNull: false,
+				defaultValue: false,
+			},
 			createdAt: {
 				type: Sequelize.DATE,
 				allowNull: false,

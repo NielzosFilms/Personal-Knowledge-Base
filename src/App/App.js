@@ -13,16 +13,31 @@ import NotesList from "../components/markdown/List";
 import Markdown from "../components/markdown/Markdown";
 import Welcome from "../components/Welcome";
 
+import UserList from "../components/admin/UserList";
+import EditUser from "../components/admin/EditUser";
+
+import AuthenticatedUserProvider from "../services/AuthenticatedUserProvider";
+
 const AUTHENTICATED = gql`
 	query {
 		isAuthenticated
 	}
 `;
 
+const AUTH_USER = gql`
+	query {
+		getAuthenticatedUser {
+			name
+			admin
+		}
+	}
+`;
+
 function App() {
-	const {loading, error, data, refetch} = useQuery(AUTHENTICATED);
+	const authenticatedRes = useQuery(AUTHENTICATED);
+	const authUserRes = useQuery(AUTH_USER);
 	const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-	const [updateTime, setUpdateTime] = React.useState(new Date());
+	const history = useHistory();
 
 	const theme = React.useMemo(
 		() =>
@@ -40,9 +55,12 @@ function App() {
 		[prefersDarkMode]
 	);
 
-	React.useEffect(() => {
-		refetch();
-	}, [updateTime]);
+	history.listen(() => {
+		authenticatedRes.refetch();
+		authUserRes.refetch();
+	});
+
+	console.log(authUserRes.data);
 
 	const ThemeWrapper = ({children}) => (
 		<ThemeProvider theme={theme}>
@@ -51,11 +69,11 @@ function App() {
 		</ThemeProvider>
 	);
 
-	if (loading) {
+	if (authenticatedRes.loading || authUserRes.loading) {
 		return <ThemeWrapper>Loading...</ThemeWrapper>;
 	}
 
-	if (error) {
+	if (authenticatedRes.error || authUserRes.error) {
 		return <ThemeWrapper>Error :(</ThemeWrapper>;
 	}
 
@@ -63,18 +81,37 @@ function App() {
 		<ThemeWrapper>
 			<Switch>
 				<Route path="/login">
-					{data.isAuthenticated && <Redirect to="/" />}
-					<Login setUpdateTime={setUpdateTime} />
+					{authenticatedRes.data.isAuthenticated && (
+						<Redirect to="/" />
+					)}
+					<Login />
 				</Route>
-				{!data.isAuthenticated && <Redirect to="/login" />}
-				<Layout setUpdateTime={setUpdateTime}>
-					<Route exact path="/notes" component={NotesList} />
+				{!authenticatedRes.data.isAuthenticated && (
+					<Redirect to="/login" />
+				)}
+				<Layout>
+					<Route exact path="/notes">
+						<NotesList />
+					</Route>
 					{/* <Route axact path="/notes" component={NotesList} /> */}
 					<Route exact path="/notes/new">
 						<Markdown isNew />
 					</Route>
 
 					<Route exact path="/notes/edit/:id" component={Markdown} />
+
+					<Route path="/admin">
+						{!authUserRes.data.getAuthenticatedUser.admin && (
+							<Redirect to="/" />
+						)}
+					</Route>
+					<Route exact path="/admin/users" component={UserList} />
+					<Route
+						exact
+						path="/admin/users/edit/:id"
+						component={EditUser}
+					/>
+
 					<Route exact path="/" component={Welcome} />
 				</Layout>
 			</Switch>
