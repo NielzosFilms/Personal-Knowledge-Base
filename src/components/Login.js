@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default function Login() {
+export default function Login({setSnackbar}) {
 	const [execLogin, loginResult] = useLazyQuery(LOGIN_QUERY);
 	const [username, setUsername] = React.useState("");
 	const [password, setPassword] = React.useState("");
@@ -71,8 +71,15 @@ export default function Login() {
 				localStorage.removeItem("noteHistory");
 				localStorage.setItem("token", loginResult.data.login.token);
 				history.push("/");
+				setSnackbar({
+					severity: "success",
+					message: "You are now logged in!",
+				});
 			} else {
-				setOpen(true);
+				setSnackbar({
+					severity: "error",
+					message: "Username and or password is incorrect.",
+				});
 			}
 		}
 	}, [loginResult.loading]);
@@ -132,7 +139,7 @@ export default function Login() {
 					horizontal: "left",
 				}}
 				open={open}
-				autoHideDuration={3000}
+				autoHideDuration={4500}
 				onClose={() => setOpen(false)}
 			>
 				<Alert severity="error">

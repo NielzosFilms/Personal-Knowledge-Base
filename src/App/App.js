@@ -3,6 +3,9 @@ import {useQuery, gql} from "@apollo/client";
 
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import {createMuiTheme, ThemeProvider} from "@material-ui/core/styles";
+import {Snackbar, IconButton} from "@material-ui/core";
+import {Alert} from "@material-ui/lab";
+import {Close} from "@material-ui/icons";
 import CssBaseline from "@material-ui/core/CssBaseline";
 
 import {Route, Switch, useHistory, Redirect} from "react-router-dom";
@@ -38,6 +41,8 @@ function App() {
 	const authenticatedRes = useQuery(AUTHENTICATED);
 	const authUserRes = useQuery(AUTH_USER);
 	const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+	// const [snackbar, setSnackbarState] = React.useState({});
+	// const [open, setOpen] = React.useState(false);
 	const history = useHistory();
 
 	const theme = React.useMemo(
@@ -61,14 +66,22 @@ function App() {
 		authUserRes.refetch();
 	});
 
-	console.log(authUserRes.data);
-
 	const ThemeWrapper = ({children}) => (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
 			{children}
 		</ThemeProvider>
 	);
+
+	const setSnackbar = (item) => {
+		// setSnackbarState(item);
+		// setOpen(true);
+	};
+
+	// const handleClose = () => {
+	// 	setOpen(false);
+	// 	setSnackbarState({});
+	// };
 
 	if (authenticatedRes.loading || authUserRes.loading) {
 		return <ThemeWrapper>Loading...</ThemeWrapper>;
@@ -85,13 +98,13 @@ function App() {
 					{authenticatedRes.data.isAuthenticated && (
 						<Redirect to="/" />
 					)}
-					<Login />
+					<Login setSnackbar={setSnackbar} />
 				</Route>
 				<Route path="/create-user">
 					{authenticatedRes.data.isAuthenticated && (
 						<Redirect to="/" />
 					)}
-					<CreateUser />
+					<CreateUser setSnackbar={setSnackbar} />
 				</Route>
 				{!authenticatedRes.data.isAuthenticated && (
 					<Redirect to="/login" />
@@ -123,6 +136,30 @@ function App() {
 					<Route exact path="/" component={Welcome} />
 				</Layout>
 			</Switch>
+			{/* <Snackbar
+				anchorOrigin={{
+					vertical: "bottom",
+					horizontal: "center",
+				}}
+				open={open}
+				autoHideDuration={6000}
+				onClose={handleClose}
+				ClickAwayListenerProps={{
+					onClickAway: () => {},
+				}}
+			>
+				<Alert severity={snackbar.severity || "info"}>
+					{snackbar.message || "null"}
+					<IconButton
+						size="small"
+						aria-label="close"
+						color="inherit"
+						onClick={handleClose}
+					>
+						<Close fontSize="small" />
+					</IconButton>
+				</Alert>
+			</Snackbar> */}
 		</ThemeWrapper>
 	);
 }

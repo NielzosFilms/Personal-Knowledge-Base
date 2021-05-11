@@ -4,6 +4,26 @@ const {GraphQLDateTime} = require("graphql-iso-date");
 const sequelize = require("sequelize");
 const {Op} = sequelize;
 
+const nodemailer = require("nodemailer");
+
+const transport = {
+	host: "smtp.gmail.com",
+	auth: {
+		user: process.env.EMAIL_USER,
+		pass: process.env.EMAIL_PASS,
+	},
+};
+
+const transporter = nodemailer.createTransport(transport);
+
+transporter.verify((error, success) => {
+	if (error) {
+		console.log(error);
+	} else {
+		console.log("Nodemailer connected!");
+	}
+});
+
 const resolvers = {
 	Date: GraphQLDateTime,
 	Query: {
@@ -184,22 +204,32 @@ const resolvers = {
 	},
 	Mutation: {
 		createUser: async (root, {name, email, password}, {models}) => {
-			const user = await models.User.create({
-				name,
-				email,
-				admin: false,
-				password,
-			});
-			await user.save();
+			// const user = await models.User.create({
+			// 	name,
+			// 	email,
+			// 	admin: false,
+			// 	password,
+			// });
+			// await user.save();
 
-			const root_folder = await models.Folder.create({
-				name: "Notes",
-				ancestry: "root/",
-				user_id: Number(user.id),
-			});
-			await root_folder.save();
+			// const root_folder = await models.Folder.create({
+			// 	name: "Notes",
+			// 	ancestry: "root/",
+			// 	user_id: Number(user.id),
+			// });
+			// await root_folder.save();
 
-			return user;
+			transporter
+				.sendMail({
+					from: "NielzosFilms Knowledge Base",
+					to: email,
+					subject: "Confirm email address to create your account!",
+
+					html: "this is the body of the message",
+				})
+				.catch((error) => console.log(error));
+
+			return null;
 		},
 		updateUser: async (
 			root,

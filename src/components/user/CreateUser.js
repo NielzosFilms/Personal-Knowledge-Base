@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default function Login() {
+export default function CreateUser({setSnackbar}) {
 	const [createUser, createUserRes] = useMutation(CREATE_USER);
 	const [name, setName] = React.useState("");
 	const [email, setEmail] = React.useState("");
@@ -56,13 +56,20 @@ export default function Login() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		createUser({
-			variables: {
-				name,
-				email,
-				password,
-			},
-		});
+		if (name && email && password) {
+			createUser({
+				variables: {
+					name,
+					email,
+					password,
+				},
+			});
+			setSnackbar({
+				severity: "info",
+				message: "Please check your inbox to verify your email",
+			});
+		} else {
+		}
 		history.push("/login");
 	};
 
