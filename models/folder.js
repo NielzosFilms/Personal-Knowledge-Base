@@ -9,7 +9,9 @@ module.exports = (sequelize, DataTypes) => {
 		 */
 		static associate(models) {
 			// define association here
-			this.hasMany(models.Note, {foreignKey: "folder_id"});
+			this.hasMany(models.Note, {
+				foreignKey: "folder_id",
+			});
 		}
 	}
 	Folder.init(

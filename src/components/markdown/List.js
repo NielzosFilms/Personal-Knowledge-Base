@@ -157,7 +157,7 @@ export default function List() {
 	);
 	const {loading, error, data, refetch} = useQuery(FOLDER_QUERY, {
 		variables: {
-			id: Number(folderId),
+			id: Number(folderId) || null,
 		},
 	});
 	const [deleteNote, deleteNoteResult] = useMutation(NOTE_DELETE);
@@ -397,36 +397,48 @@ export default function List() {
 				</DialogActions>
 			</Dialog>
 			<ToolbarCustom>
-				<TextField
-					size="small"
-					color="secondary"
-					placeholder="Search..."
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					InputProps={{
-						endAdornment: search && (
-							<IconButton
-								onClick={() => setSearch("")}
-								size="small"
-							>
-								<Close />
-							</IconButton>
-						),
-					}}
-				/>
-				<div style={{flexGrow: 1}}></div>
-				<IconButton
-					color="secondary"
-					onClick={() => history.push("/notes/new")}
+				<Box
+					display="flex"
+					justifyContent="space-between"
+					style={{width: "100%"}}
 				>
-					<NoteAddOutlined />
-				</IconButton>
-				<IconButton color="secondary" onClick={handleFolderCreateOpen}>
-					<CreateNewFolderOutlined />
-				</IconButton>
-				<IconButton color="secondary" onClick={() => refetch()}>
-					<Refresh />
-				</IconButton>
+					<Box display="flex" alignItems="center">
+						{/* <TextField
+							size="small"
+							color="secondary"
+							placeholder="Search..."
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							InputProps={{
+								endAdornment: search && (
+									<IconButton
+										onClick={() => setSearch("")}
+										size="small"
+									>
+										<Close />
+									</IconButton>
+								),
+							}}
+						/> */}
+					</Box>
+					<Box display="flex" alignItems="center">
+						<IconButton
+							color="secondary"
+							onClick={() => history.push("/notes/new")}
+						>
+							<NoteAddOutlined />
+						</IconButton>
+						<IconButton
+							color="secondary"
+							onClick={handleFolderCreateOpen}
+						>
+							<CreateNewFolderOutlined />
+						</IconButton>
+						<IconButton color="secondary" onClick={() => refetch()}>
+							<Refresh />
+						</IconButton>
+					</Box>
+				</Box>
 			</ToolbarCustom>
 			<Breadcrumbs className={classes.breadcrumbs}>
 				{crums.map((crum, index) => {

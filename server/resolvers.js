@@ -7,10 +7,6 @@ const {Op} = sequelize;
 const resolvers = {
 	Date: GraphQLDateTime,
 	Query: {
-		hello: (root, args, {models, loggedIn, user}) => {
-			if (!loggedIn) return null;
-			return `Hello ${user.name}`;
-		},
 		login: async (root, {username, password}, {models, loggedIn}) => {
 			if (loggedIn) return {success: false, token: null};
 			const user = await models.User.findOne({
@@ -109,7 +105,7 @@ const resolvers = {
 		},
 		folderByIdOrRoot: async (root, {id}, {models, loggedIn, user}) => {
 			if (!loggedIn) return null;
-			if (id && id !== "root") {
+			if (id) {
 				return models.Folder.findOne({
 					where: {
 						id,
@@ -187,6 +183,76 @@ const resolvers = {
 		},
 	},
 	Mutation: {
+		createUser: async (root, {name, email, password}, {models}) => {
+			const user = await models.User.create({
+				name,
+				email,
+				admin: false,
+				password,
+			});
+			await user.save();
+
+			const root_folder = await models.Folder.create({
+				name: "Notes",
+				ancestry: "root/",
+				user_id: Number(user.id),
+			});
+			await root_folder.save();
+
+			return user;
+		},
+		updateUser: async (
+			root,
+			{id, name, email, admin},
+			{models, loggedIn, user}
+		) => {
+			if (!loggedIn && !user.admin) return null;
+			await models.User.update(
+				{
+					name,
+					email,
+					admin,
+				},
+				{
+					where: {
+						id,
+					},
+				}
+			);
+			return await models.User.findOne({
+				where: {
+					id,
+				},
+			});
+		},
+		deleteUser: async (root, {id}, {models, loggedIn, user}) => {
+			if (!loggedIn && !user.admin) return false;
+
+			await models.Note.destroy({
+				where: {
+					user_id: id,
+				},
+			});
+
+			await models.Folder.destroy({
+				where: {
+					user_id: id,
+				},
+			});
+
+			await models.Session.destroy({
+				where: {
+					user_id: id,
+				},
+			});
+
+			await models.User.destroy({
+				where: {
+					id,
+				},
+			});
+			return true;
+		},
 		createNote: async (
 			root,
 			{filename, content, folderId},

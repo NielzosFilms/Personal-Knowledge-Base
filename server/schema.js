@@ -6,6 +6,7 @@ const typeDefs = gql(`
     type User {
         id: Int!
         name: String!
+        email: String!
         admin: Boolean!
         createdAt: Date!
         updatedAt: Date!
@@ -38,13 +39,13 @@ const typeDefs = gql(`
     }
 
     type Query {
-        hello: String
         login(username: String!, password: String!): LoginPayload
         isAuthenticated: Boolean
         getAuthenticatedUser: User
         logout: Boolean
         users: [User]
         userById(id: Int!): User
+
         notes(search: String): [Note]
         noteById(id: Int!): Note
         noteWithIds(ids: [Int]!): [Note]
@@ -55,6 +56,10 @@ const typeDefs = gql(`
     }
 
     type Mutation {
+        createUser(name: String!, email: String!, password: String!): User
+        updateUser(id: Int!, name: String, email: String, admin: Boolean): User
+        deleteUser(id: Int!): Boolean
+
         createNote(filename: String!, content: String, folderId: Int): Note
         updateNote(id: Int!, filename: String, content: String): Note
         deleteNote(id: Int!): Boolean

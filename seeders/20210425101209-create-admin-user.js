@@ -16,6 +16,7 @@ module.exports = {
 		await queryInterface.bulkInsert("Users", [
 			{
 				name: "admin",
+				email: "admin@test.nl",
 				password: passwordHash.generate("asdf"),
 				admin: true,
 			},

@@ -299,12 +299,12 @@ export default function MarkdownNew({isNew = false}) {
 			},
 		];
 		return (
-			<>
-				<Box
-					display="flex"
-					alignItems="center"
-					className={classes.grow}
-				>
+			<Box
+				display="flex"
+				justifyContent="space-between"
+				style={{width: "100%"}}
+			>
+				<Box display="flex" alignItems="center">
 					<IconButton
 						color="secondary"
 						onClick={() => history.push("/notes")}
@@ -328,6 +328,8 @@ export default function MarkdownNew({isNew = false}) {
 							{filename}
 						</Typography>
 					)}
+				</Box>
+				<Box display="flex" alignItems="center">
 					<IconButton color="secondary" onClick={handleSave}>
 						<Save />
 					</IconButton>
@@ -360,7 +362,7 @@ export default function MarkdownNew({isNew = false}) {
 						</>
 					)}
 				</Box>
-				<Box>
+				<Box display="flex" alignItems="center">
 					<IconButton
 						edge="end"
 						color="secondary"
@@ -369,7 +371,7 @@ export default function MarkdownNew({isNew = false}) {
 						{edit ? <Close /> : <Edit />}
 					</IconButton>
 				</Box>
-			</>
+			</Box>
 		);
 	};
 

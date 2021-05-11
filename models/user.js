@@ -10,11 +10,25 @@ module.exports = (sequelize, DataTypes) => {
 		 */
 		static associate(models) {
 			// define association here
+			this.hasMany(models.Note, {
+				foreignKey: "user_id",
+			});
+			this.hasMany(models.Session, {
+				foreignKey: "user_id",
+			});
+			this.hasMany(models.Folder, {
+				foreignKey: "user_id",
+			});
 		}
 	}
 	User.init(
 		{
 			name: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				unique: true,
+			},
+			email: {
 				type: DataTypes.STRING,
 				allowNull: false,
 				unique: true,
@@ -34,6 +48,7 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{
 			sequelize,
+			paranoid: true,
 			modelName: "User",
 		}
 	);

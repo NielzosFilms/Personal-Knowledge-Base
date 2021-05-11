@@ -6,6 +6,7 @@ const USER_QUERY = gql`
 		getAuthenticatedUser {
 			id
 			name
+			email
 			admin
 			createdAt
 			updatedAt

@@ -141,6 +141,9 @@ export default function TopBar({authenticatedUser}) {
 
 	if (logoutResult.data?.logout) {
 		localStorage.removeItem("token");
+		localStorage.removeItem("breadCrums");
+		localStorage.removeItem("folderId");
+		localStorage.removeItem("noteHistory");
 		history.push("/login");
 	}
 

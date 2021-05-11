@@ -15,6 +15,7 @@ import Welcome from "../components/Welcome";
 
 import UserList from "../components/admin/UserList";
 import EditUser from "../components/admin/EditUser";
+import CreateUser from "../components/user/CreateUser";
 
 import AuthenticatedUserProvider from "../services/AuthenticatedUserProvider";
 
@@ -86,6 +87,12 @@ function App() {
 					)}
 					<Login />
 				</Route>
+				<Route path="/create-user">
+					{authenticatedRes.data.isAuthenticated && (
+						<Redirect to="/" />
+					)}
+					<CreateUser />
+				</Route>
 				{!authenticatedRes.data.isAuthenticated && (
 					<Redirect to="/login" />
 				)}
@@ -101,16 +108,17 @@ function App() {
 					<Route exact path="/notes/edit/:id" component={Markdown} />
 
 					<Route path="/admin">
-						{!authUserRes.data.getAuthenticatedUser.admin && (
-							<Redirect to="/" />
-						)}
+						{authUserRes.data?.getAuthenticatedUser &&
+							!authUserRes.data.getAuthenticatedUser.admin && (
+								<Redirect to="/" />
+							)}
 					</Route>
 					<Route exact path="/admin/users" component={UserList} />
-					<Route
-						exact
-						path="/admin/users/edit/:id"
-						component={EditUser}
-					/>
+					<Route exact path="/admin/users/edit/:id">
+						<AuthenticatedUserProvider>
+							<EditUser />
+						</AuthenticatedUserProvider>
+					</Route>
 
 					<Route exact path="/" component={Welcome} />
 				</Layout>

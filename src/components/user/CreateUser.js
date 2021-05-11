@@ -1,5 +1,5 @@
 import React from "react";
-import {useQuery, useLazyQuery, gql} from "@apollo/client";
+import {useQuery, useMutation, gql} from "@apollo/client";
 import {
 	TextField,
 	Button,
@@ -19,11 +19,10 @@ import {makeStyles, useTheme} from "@material-ui/core/styles";
 import {Close} from "@material-ui/icons";
 import {useHistory, Redirect} from "react-router-dom";
 
-const LOGIN_QUERY = gql`
-	query Login($username: String!, $password: String!) {
-		login(username: $username, password: $password) {
-			success
-			token
+const CREATE_USER = gql`
+	mutation CreateUser($name: String!, $email: String!, $password: String!) {
+		createUser(name: $name, email: $email, password: $password) {
+			id
 		}
 	}
 `;
@@ -42,40 +41,30 @@ const useStyles = makeStyles((theme) => ({
 	formComponent: {
 		margin: theme.spacing(1.5),
 	},
+	formContainer: {
+		width: "100%",
+	},
 }));
 
 export default function Login() {
-	const [execLogin, loginResult] = useLazyQuery(LOGIN_QUERY);
-	const [username, setUsername] = React.useState("");
+	const [createUser, createUserRes] = useMutation(CREATE_USER);
+	const [name, setName] = React.useState("");
+	const [email, setEmail] = React.useState("");
 	const [password, setPassword] = React.useState("");
 	const classes = useStyles();
 	const history = useHistory();
-	const [open, setOpen] = React.useState(false);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		execLogin({
+		createUser({
 			variables: {
-				username,
+				name,
+				email,
 				password,
 			},
 		});
+		history.push("/login");
 	};
-
-	React.useEffect(() => {
-		if (loginResult.data) {
-			if (loginResult.data.login.success) {
-				localStorage.removeItem("token");
-				localStorage.removeItem("breadCrums");
-				localStorage.removeItem("folderId");
-				localStorage.removeItem("noteHistory");
-				localStorage.setItem("token", loginResult.data.login.token);
-				history.push("/");
-			} else {
-				setOpen(true);
-			}
-		}
-	}, [loginResult.loading]);
 
 	return (
 		<>
@@ -88,14 +77,27 @@ export default function Login() {
 			</AppBar>
 			<Container className={classes.root}>
 				<Paper className={classes.paper}>
-					<Typography variant="h3">Login</Typography>
+					<Link href="#" onClick={() => history.push("/login")}>
+						Back to login
+					</Link>
+					<Typography variant="h3">Create account</Typography>
 					<form onSubmit={handleSubmit}>
-						<FormControl>
+						<FormControl className={classes.formContainer}>
 							<TextField
 								type="text"
-								value={username}
-								onChange={(e) => setUsername(e.target.value)}
+								value={name}
+								onChange={(e) => setName(e.target.value)}
 								label="Username"
+								variant="filled"
+								size="small"
+								required
+								className={classes.formComponent}
+							/>
+							<TextField
+								type="text"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								label="Email"
 								variant="filled"
 								size="small"
 								required
@@ -117,36 +119,12 @@ export default function Login() {
 								variant="contained"
 								className={classes.formComponent}
 							>
-								Login
+								Create
 							</Button>
 						</FormControl>
 					</form>
-					<Link href="#" onClick={() => history.push("/create-user")}>
-						Create account
-					</Link>
 				</Paper>
 			</Container>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "left",
-				}}
-				open={open}
-				autoHideDuration={3000}
-				onClose={() => setOpen(false)}
-			>
-				<Alert severity="error">
-					Username and or password is incorrect.
-					<IconButton
-						size="small"
-						aria-label="close"
-						color="inherit"
-						onClick={() => setOpen(false)}
-					>
-						<Close fontSize="small" />
-					</IconButton>
-				</Alert>
-			</Snackbar>
 		</>
 	);
 }
