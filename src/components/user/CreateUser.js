@@ -17,12 +17,22 @@ import {
 import {Alert} from "@material-ui/lab";
 import {makeStyles, useTheme} from "@material-ui/core/styles";
 import {Close} from "@material-ui/icons";
-import {useHistory, Redirect} from "react-router-dom";
+import {useHistory, Redirect, useParams} from "react-router-dom";
+import VerifyEmail from "./VerifyEmail";
 
 const CREATE_USER = gql`
-	mutation CreateUser($name: String!, $email: String!, $password: String!) {
-		createUser(name: $name, email: $email, password: $password) {
+	mutation CreateUser($token: String!, $name: String!, $password: String!) {
+		createUser(token: $token, name: $name, password: $password) {
 			id
+		}
+	}
+`;
+
+const VERIFY_TOKEN = gql`
+	query VerifyToken($token: String!) {
+		verifyEmailToken(token: $token) {
+			success
+			email
 		}
 	}
 `;
@@ -47,6 +57,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function CreateUser({setSnackbar}) {
+	const {token} = useParams();
+	const {loading, error, data} = useQuery(VERIFY_TOKEN, {
+		variables: {
+			token,
+		},
+	});
 	const [createUser, createUserRes] = useMutation(CREATE_USER);
 	const [name, setName] = React.useState("");
 	const [email, setEmail] = React.useState("");
@@ -54,24 +70,31 @@ export default function CreateUser({setSnackbar}) {
 	const classes = useStyles();
 	const history = useHistory();
 
+	React.useEffect(() => {
+		console.log(data);
+		if (data?.verifyEmailToken?.success) {
+			setEmail(data.verifyEmailToken.email);
+		}
+	}, [data]);
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		if (name && email && password) {
+		if (token && name && password) {
 			createUser({
 				variables: {
+					token,
 					name,
-					email,
 					password,
 				},
 			});
-			setSnackbar({
-				severity: "info",
-				message: "Please check your inbox to verify your email",
-			});
+			history.push("/login");
 		} else {
+			console.log("values not provided/incorrect");
 		}
-		history.push("/login");
 	};
+
+	if (loading) return <>Loading...</>;
+	if (error) return <>Error :( (Or invalid token)</>;
 
 	return (
 		<>
@@ -102,8 +125,8 @@ export default function CreateUser({setSnackbar}) {
 							/>
 							<TextField
 								type="text"
+								disabled
 								value={email}
-								onChange={(e) => setEmail(e.target.value)}
 								label="Email"
 								variant="filled"
 								size="small"
@@ -126,7 +149,7 @@ export default function CreateUser({setSnackbar}) {
 								variant="contained"
 								className={classes.formComponent}
 							>
-								Create
+								Create Account
 							</Button>
 						</FormControl>
 					</form>

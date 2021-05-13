@@ -46,10 +46,7 @@ const resolvers = {
 					return {success: true, token};
 				}
 			}
-			return {
-				success: false,
-				token: null,
-			};
+			throw new Error("Username and or password given was not correct.");
 		},
 		logout: async (root, args, {models, loggedIn, user, token}) => {
 			if (!loggedIn || !user || !token) return false;
@@ -59,6 +56,17 @@ const resolvers = {
 				},
 			});
 			return true;
+		},
+		verifyEmailToken: async (root, {token}, {models}) => {
+			const emailToken = await models.EmailToken.findOne({
+				where: {
+					token,
+				},
+			});
+			if (emailToken) {
+				return {success: true, email: emailToken.email};
+			}
+			throw new Error("The given token was not found.");
 		},
 		isAuthenticated: async (root, args, {loggedIn}) => {
 			return loggedIn;
@@ -203,33 +211,82 @@ const resolvers = {
 		},
 	},
 	Mutation: {
-		createUser: async (root, {name, email, password}, {models}) => {
-			// const user = await models.User.create({
-			// 	name,
-			// 	email,
-			// 	admin: false,
-			// 	password,
-			// });
-			// await user.save();
+		sendVerifyEmail: async (root, {email}, {models}) => {
+			const token = crypto.randomBytes(64).toString("hex");
+			const user = await models.User.findOne({
+				where: {
+					email,
+				},
+			});
+			if (!user) {
+				const port =
+					process.env.NODE_ENV === "production"
+						? process.env.SERVER_PORT
+						: "3000";
+				return transporter
+					.sendMail({
+						from: "NielzosFilms Knowledge Base",
+						to: email,
+						subject:
+							"Confirm email address to create your account!",
 
-			// const root_folder = await models.Folder.create({
-			// 	name: "Notes",
-			// 	ancestry: "root/",
-			// 	user_id: Number(user.id),
-			// });
-			// await root_folder.save();
+						html: `<a href="http://${process.env.HOST}:${port}/create-user/token/${token}">Click here to create your account</a>`,
+					})
+					.then(async (res) => {
+						await models.EmailToken.destroy({
+							where: {
+								email,
+							},
+						});
 
-			transporter
-				.sendMail({
-					from: "NielzosFilms Knowledge Base",
-					to: email,
-					subject: "Confirm email address to create your account!",
+						let expiration = new Date();
+						expiration.setHours(expiration.getHours() + 1);
+						const emailToken = await models.EmailToken.create({
+							token,
+							email,
+							expiration,
+						});
+						await emailToken.save();
+						return true;
+					})
+					.catch((error) => {
+						console.log(error);
+						throw new Error("The email was invalid.");
+					});
+			} else {
+				throw new Error("A user was found with this email address.");
+			}
+		},
+		createUser: async (root, {token, name, password}, {models}) => {
+			const emailToken = await models.EmailToken.findOne({
+				where: {
+					token,
+				},
+			});
+			if (emailToken) {
+				const user = await models.User.create({
+					name,
+					email: emailToken.email,
+					admin: false,
+					password,
+				});
+				await user.save();
 
-					html: "this is the body of the message",
-				})
-				.catch((error) => console.log(error));
+				const root_folder = await models.Folder.create({
+					name: "Notes",
+					ancestry: "root/",
+					user_id: Number(user.id),
+				});
+				await root_folder.save();
 
-			return null;
+				await models.EmailToken.destroy({
+					where: {
+						token,
+					},
+				});
+				return user;
+			}
+			throw new Error("Email token not found.");
 		},
 		updateUser: async (
 			root,

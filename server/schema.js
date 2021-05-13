@@ -38,11 +38,19 @@ const typeDefs = gql(`
         token: String
     }
 
+    type VerifyEmailTokenPayload {
+        success: Boolean!
+        email: String
+    }
+
     type Query {
         login(username: String!, password: String!): LoginPayload
         isAuthenticated: Boolean
         getAuthenticatedUser: User
         logout: Boolean
+
+        verifyEmailToken(token: String!): VerifyEmailTokenPayload
+
         users: [User]
         userById(id: Int!): User
 
@@ -56,7 +64,8 @@ const typeDefs = gql(`
     }
 
     type Mutation {
-        createUser(name: String!, email: String!, password: String!): User
+        sendVerifyEmail(email: String!): Boolean
+        createUser(token: String!, name: String!, password: String!): User
         updateUser(id: Int!, name: String, email: String, admin: Boolean): User
         deleteUser(id: Int!): Boolean
 

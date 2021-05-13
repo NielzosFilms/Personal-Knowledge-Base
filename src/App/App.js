@@ -19,6 +19,7 @@ import Welcome from "../components/Welcome";
 import UserList from "../components/admin/UserList";
 import EditUser from "../components/admin/EditUser";
 import CreateUser from "../components/user/CreateUser";
+import VerifyEmail from "../components/user/VerifyEmail";
 
 import AuthenticatedUserProvider from "../services/AuthenticatedUserProvider";
 
@@ -94,13 +95,19 @@ function App() {
 	return (
 		<ThemeWrapper>
 			<Switch>
-				<Route path="/login">
+				<Route exact path="/login">
 					{authenticatedRes.data.isAuthenticated && (
 						<Redirect to="/" />
 					)}
 					<Login setSnackbar={setSnackbar} />
 				</Route>
-				<Route path="/create-user">
+				<Route exact path="/create-user">
+					{authenticatedRes.data.isAuthenticated && (
+						<Redirect to="/" />
+					)}
+					<VerifyEmail setSnackbar={setSnackbar} />
+				</Route>
+				<Route exact path="/create-user/token/:token">
 					{authenticatedRes.data.isAuthenticated && (
 						<Redirect to="/" />
 					)}
