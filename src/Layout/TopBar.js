@@ -24,6 +24,7 @@ import {
 	ExitToApp,
 	Note,
 	People,
+	Person,
 } from "@material-ui/icons";
 import {useHistory, Redirect} from "react-router-dom";
 import {useSnackbar} from "notistack";
@@ -119,8 +120,13 @@ const menuButtons = [
 const adminButtons = [
 	{
 		text: "Users",
-		icon: <People />,
+		icon: <Person />,
 		route: "/admin/users",
+	},
+	{
+		text: "User Groups",
+		icon: <Person />,
+		route: "/admin/userGroups",
 	},
 ];
 
@@ -131,6 +137,14 @@ export default function TopBar({authenticatedUser}) {
 	const [open, setOpen] = React.useState(false);
 	const [doLogout, logoutResult] = useLazyQuery(LOGOUT_QUERY);
 	const {enqueueSnackbar} = useSnackbar();
+
+	const userGroupButtons = [
+		...authenticatedUser.userGroups.map((group) => ({
+			text: group.name,
+			icon: <People />,
+			route: `/userGroups/${group.id}`,
+		})),
+	];
 
 	const handleClick = (route) => {
 		history.push(route);
@@ -212,14 +226,29 @@ export default function TopBar({authenticatedUser}) {
 					))}
 				</List>
 				<Divider />
+				<List>
+					<ListItem>
+						<Typography>User groups</Typography>
+					</ListItem>
+					{userGroupButtons.map((item) => (
+						<ListItem
+							button
+							key={item.text}
+							onClick={() => handleClick(item.route)}
+							selected={history.location.pathname === item.route}
+						>
+							<ListItemIcon>{item.icon}</ListItemIcon>
+							<ListItemText primary={item.text} />
+						</ListItem>
+					))}
+				</List>
+				<Divider />
 				{authenticatedUser.admin && (
 					<>
 						<List>
-							<List>
-								<ListItem>
-									<Typography>Admin menu</Typography>
-								</ListItem>
-							</List>
+							<ListItem>
+								<Typography>Admin menu</Typography>
+							</ListItem>
 							{adminButtons.map((item) => (
 								<ListItem
 									button

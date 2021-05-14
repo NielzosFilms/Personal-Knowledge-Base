@@ -11,26 +11,6 @@ const resolvers = require(path.join(__dirname, "/resolvers"));
 
 const sequelize = require(path.join(__dirname, "../models/index"));
 
-const nodemailer = require("nodemailer");
-
-const transport = {
-	host: "smtp.gmail.com",
-	auth: {
-		user: process.env.EMAIL_USER,
-		pass: process.env.EMAIL_PASS,
-	},
-};
-
-const transporter = nodemailer.createTransport(transport);
-
-transporter.verify((error, success) => {
-	if (error) {
-		console.log(error);
-	} else {
-		console.log("Nodemailer connected!");
-	}
-});
-
 const server = new ApolloServer({
 	typeDefs,
 	resolvers,
@@ -65,7 +45,6 @@ const server = new ApolloServer({
 					loggedIn: true,
 					user,
 					token,
-					transporter,
 				};
 			}
 		}
@@ -74,7 +53,6 @@ const server = new ApolloServer({
 			loggedIn: false,
 			user: null,
 			token: null,
-			transporter: null,
 		};
 	},
 });

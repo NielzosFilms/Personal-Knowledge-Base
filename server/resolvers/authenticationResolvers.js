@@ -1,6 +1,26 @@
 const passwordHash = require("password-hash");
 const crypto = require("crypto");
 
+const nodemailer = require("nodemailer");
+
+const transport = {
+	host: "smtp.gmail.com",
+	auth: {
+		user: process.env.EMAIL_USER,
+		pass: process.env.EMAIL_PASS,
+	},
+};
+
+const transporter = nodemailer.createTransport(transport);
+
+transporter.verify((error, success) => {
+	if (error) {
+		console.log(error);
+	} else {
+		console.log("Nodemailer connected!");
+	}
+});
+
 const resolvers = {
 	Query: {
 		login: async (root, {username, password}, {models, loggedIn}) => {
@@ -53,7 +73,7 @@ const resolvers = {
 		},
 	},
 	Mutation: {
-		sendVerifyEmail: async (root, {email}, {models, transporter}) => {
+		sendVerifyEmail: async (root, {email}, {models}) => {
 			const token = crypto.randomBytes(64).toString("hex");
 			const user = await models.User.findOne({
 				where: {

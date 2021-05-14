@@ -16,6 +16,11 @@ import NotesList from "../components/markdown/List";
 import Markdown from "../components/markdown/Markdown";
 import Welcome from "../components/Welcome";
 
+import UserGroupsList from "../components/admin/userGroup/List";
+import UserGroupEdit from "../components/admin/userGroup/Edit";
+
+import UserGroup from "../components/UserGroup";
+
 import UserList from "../components/admin/UserList";
 import EditUser from "../components/admin/EditUser";
 import CreateUser from "../components/user/CreateUser";
@@ -114,6 +119,7 @@ function App() {
 					</Route>
 
 					<Route exact path="/notes/edit/:id" component={Markdown} />
+					<Route exact path="/userGroups/:id" component={UserGroup} />
 
 					<Route path="/admin">
 						{authUserRes.data?.getAuthenticatedUser &&
@@ -127,6 +133,17 @@ function App() {
 							<EditUser />
 						</AuthenticatedUserProvider>
 					</Route>
+
+					<Route
+						exact
+						path="/admin/userGroups"
+						component={UserGroupsList}
+					/>
+					<Route
+						exact
+						path="/admin/userGroups/edit/:id"
+						component={UserGroupEdit}
+					/>
 
 					<Route exact path="/" component={Welcome} />
 				</Layout>

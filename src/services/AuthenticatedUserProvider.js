@@ -8,6 +8,12 @@ const USER_QUERY = gql`
 			name
 			email
 			admin
+			userGroups {
+				id
+				name
+				createdAt
+				updatedAt
+			}
 			createdAt
 			updatedAt
 		}
@@ -27,7 +33,7 @@ export default function AuthenticatedUserProvider({children}) {
 	if (loading) return <>Loading...</>;
 	if (error) return <>Error :(</>;
 
-	if (!user) return <></>;
+	if (!user || !user.userGroups) return <></>;
 
 	return (
 		<>

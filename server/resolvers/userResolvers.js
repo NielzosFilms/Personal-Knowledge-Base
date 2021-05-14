@@ -12,9 +12,17 @@ const resolvers = {
 				},
 			});
 		},
-		userGroups: async (root, args, {models, loggedIn}) => {
-			if (!loggedIn) return null;
+		userGroups: async (root, args, {models, loggedIn, user}) => {
+			if (!loggedIn || !user.admin) return null;
 			return models.UserGroup.findAll();
+		},
+		userGroupById: async (root, {id}, {models, loggedIn, user}) => {
+			if (!loggedIn || !user.admin) return null;
+			return models.UserGroup.findOne({
+				where: {
+					id,
+				},
+			});
 		},
 	},
 	Mutation: {
@@ -100,6 +108,23 @@ const resolvers = {
 				},
 			});
 			return true;
+		},
+		updateUserGroup: async (root, {id, name}, {models}) => {
+			await models.UserGroup.update(
+				{
+					name,
+				},
+				{
+					where: {
+						id,
+					},
+				}
+			);
+			return await models.UserGroup.findOne({
+				where: {
+					id,
+				},
+			});
 		},
 	},
 	User: {

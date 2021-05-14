@@ -81,7 +81,9 @@ const typeDefs = gql(`
 
         users: [User]
         userById(id: Int!): User
+
         userGroups: [UserGroup]
+        userGroupById(id: Int!): UserGroup
 
         notes(search: String): [Note]
         noteById(id: Int!): Note
@@ -101,6 +103,8 @@ const typeDefs = gql(`
         createUser(token: String!, name: String!, password: String!): User
         updateUser(id: Int!, name: String, email: String, admin: Boolean): User
         deleteUser(id: Int!): Boolean
+
+        updateUserGroup(id: Int!, name: String!): UserGroup
 
         createNote(filename: String!, content: String, folderId: Int): Note
         updateNote(id: Int!, filename: String, content: String): Note
