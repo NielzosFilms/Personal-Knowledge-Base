@@ -19,6 +19,11 @@ module.exports = (sequelize, DataTypes) => {
 			this.hasMany(models.Folder, {
 				foreignKey: "user_id",
 			});
+
+			this.belongsToMany(models.UserGroup, {
+				foreignKey: "user_id",
+				through: "UserGroupLink",
+			});
 		}
 	}
 	User.init(

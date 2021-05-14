@@ -8,6 +8,15 @@ const typeDefs = gql(`
         name: String!
         email: String!
         admin: Boolean!
+        userGroups: [UserGroup]
+        createdAt: Date!
+        updatedAt: Date!
+    }
+
+    type UserGroup {
+        id: Int!
+        name: String
+        users: [User]
         createdAt: Date!
         updatedAt: Date!
     }
@@ -33,6 +42,15 @@ const typeDefs = gql(`
         updatedAt: Date!
     }
 
+    type Grocery {
+        id: Int!
+        name: String!
+        needed: Boolean!
+        userGroup: UserGroup!
+        createdAt: Date!
+        updatedAt: Date!
+    }
+
     type LoginPayload {
         success: Boolean!
         token: String
@@ -53,6 +71,7 @@ const typeDefs = gql(`
 
         users: [User]
         userById(id: Int!): User
+        userGroups: [UserGroup]
 
         notes(search: String): [Note]
         noteById(id: Int!): Note
@@ -61,6 +80,8 @@ const typeDefs = gql(`
         folders(ancestry: String): [Folder]
         folderByIdOrRoot(id: Int): Folder
         folderByAncestry(ancestry: String!): Folder
+
+        groceriesByUserGroupId(id: Int!): [Grocery]
     }
 
     type Mutation {

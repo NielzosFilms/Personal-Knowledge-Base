@@ -12,6 +12,10 @@ const resolvers = {
 				},
 			});
 		},
+		userGroups: async (root, args, {models, loggedIn}) => {
+			if (!loggedIn) return null;
+			return models.UserGroup.findAll();
+		},
 	},
 	Mutation: {
 		createUser: async (root, {token, name, password}, {models}) => {
@@ -96,6 +100,18 @@ const resolvers = {
 				},
 			});
 			return true;
+		},
+	},
+	User: {
+		userGroups: async (root, args, {models, loggedIn}) => {
+			if (!loggedIn) return null;
+			return await root.getUserGroups();
+		},
+	},
+	UserGroup: {
+		users: async (root, args, {models, loggedIn}) => {
+			if (!loggedIn) return null;
+			return await root.getUsers();
 		},
 	},
 };
