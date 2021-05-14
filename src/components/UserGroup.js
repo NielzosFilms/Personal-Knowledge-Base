@@ -20,7 +20,7 @@ import {
 	TableCell,
 	TableBody,
 } from "@material-ui/core";
-import {EditOutlined} from "@material-ui/icons";
+import {EditOutlined, Launch} from "@material-ui/icons";
 import {getDateString} from "../services/dateFunctions";
 
 const QUERY_GROUP = gql`
@@ -85,7 +85,7 @@ export default function UserGroup() {
 			<Typography variant="h3">{data.userGroupById.name}</Typography>
 			<Divider className={classes.divider} />
 			<Grid container spacing={2}>
-				<Grid item xs={12} sm={6}>
+				<Grid item xs={12} md={6}>
 					<Typography variant="h4">Grocery Lists</Typography>
 					<Paper className={classes.paper}>
 						<TableContainer>
@@ -144,7 +144,7 @@ export default function UserGroup() {
 															color="secondary"
 															size="small"
 														>
-															<EditOutlined />
+															<Launch />
 														</IconButton>
 													</Box>
 												</TableCell>
@@ -156,7 +156,7 @@ export default function UserGroup() {
 						</TableContainer>
 					</Paper>
 				</Grid>
-				<Grid item xs={12} sm={6}>
+				<Grid item xs={12} md={6}>
 					<Typography variant="h4">Other users</Typography>
 					<Paper className={classes.paper}>
 						<TableContainer>
