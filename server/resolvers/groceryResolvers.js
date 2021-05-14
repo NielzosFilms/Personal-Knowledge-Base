@@ -26,9 +26,19 @@ const resolvers = {
 	},
 	Mutation: {},
 	Grocery: {
+		groceryList: async (root, args, {models, loggedIn}) => {
+			if (!loggedIn) return null;
+			return await root.getGroceryList();
+		},
+	},
+	GroceryList: {
+		groceries: async (root, args, {models, loggedIn}) => {
+			if (!loggedIn) return null;
+			return await root.getGroceries();
+		},
 		userGroup: async (root, args, {models, loggedIn}) => {
 			if (!loggedIn) return null;
-			return root.getUserGroup();
+			return await root.getUserGroup();
 		},
 	},
 };

@@ -113,6 +113,10 @@ const resolvers = {
 			if (!loggedIn) return null;
 			return await root.getUsers();
 		},
+		groceryLists: async (root, args, {models, loggedIn}) => {
+			if (!loggedIn) return null;
+			return await root.getGroceryLists();
+		},
 	},
 };
 

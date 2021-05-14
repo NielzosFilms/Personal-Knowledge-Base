@@ -16,9 +16,9 @@ module.exports = (sequelize, DataTypes) => {
 				foreignKey: "user_group_id",
 				through: "UserGroupLink",
 			});
-			// this.hasMany(models.Grocery, {
-			// 	foreignKey: "user_group_id",
-			// });
+			this.hasMany(models.GroceryList, {
+				foreignKey: "user_group_id",
+			});
 		}
 	}
 	UserGroup.init(

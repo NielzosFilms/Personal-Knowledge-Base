@@ -2,7 +2,7 @@
 
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
-		await queryInterface.createTable("Groceries", {
+		await queryInterface.createTable("GroceryLists", {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
@@ -13,11 +13,6 @@ module.exports = {
 				type: Sequelize.STRING,
 				allowNull: false,
 				unique: true,
-			},
-			needed: {
-				type: Sequelize.BOOLEAN,
-				allowNull: false,
-				defaultValue: false,
 			},
 			user_group_id: {
 				type: Sequelize.INTEGER,
@@ -41,6 +36,6 @@ module.exports = {
 	},
 
 	down: async (queryInterface, Sequelize) => {
-		await queryInterface.dropTable("Groceries");
+		await queryInterface.dropTable("GroceryLists");
 	},
 };

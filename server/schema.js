@@ -17,6 +17,7 @@ const typeDefs = gql(`
         id: Int!
         name: String
         users: [User]
+        groceryLists: [GroceryList]
         createdAt: Date!
         updatedAt: Date!
     }
@@ -46,7 +47,16 @@ const typeDefs = gql(`
         id: Int!
         name: String!
         needed: Boolean!
-        userGroup: UserGroup!
+        groceryList: GroceryList!
+        createdAt: Date!
+        updatedAt: Date!
+    }
+
+    type GroceryList {
+        id: Int!
+        name: String!
+        userGroup: UserGroup
+        groceries: [Grocery]
         createdAt: Date!
         updatedAt: Date!
     }

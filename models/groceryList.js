@@ -1,7 +1,7 @@
 "use strict";
 const {Model} = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-	class Grocery extends Model {
+	class GroceryList extends Model {
 		/**
 		 * Helper method for defining associations.
 		 * This method is not a part of Sequelize lifecycle.
@@ -13,24 +13,18 @@ module.exports = (sequelize, DataTypes) => {
 			// this.belongsTo(models.Folder, {
 			// 	foreignKey: "folder_id",
 			// });
-			this.belongsTo(models.GroceryList, {
-				foreignKey: "grocery_list_id",
-			});
+			this.hasMany(models.Grocery, {foreignKey: "grocery_list_id"});
+			this.belongsTo(models.UserGroup, {foreignKey: "user_group_id"});
 		}
 	}
-	Grocery.init(
+	GroceryList.init(
 		{
 			name: {
 				type: DataTypes.STRING,
 				allowNull: false,
 				unique: true,
 			},
-			needed: {
-				type: DataTypes.BOOLEAN,
-				allowNull: false,
-				defaultValue: false,
-			},
-			grocery_list_id: {
+			user_group_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
@@ -38,8 +32,8 @@ module.exports = (sequelize, DataTypes) => {
 		{
 			sequelize,
 			// paranoid: true,
-			modelName: "Grocery",
+			modelName: "GroceryList",
 		}
 	);
-	return Grocery;
+	return GroceryList;
 };
