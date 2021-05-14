@@ -65,6 +65,8 @@ const typeDefs = gql(`
 
     type Mutation {
         sendVerifyEmail(email: String!): Boolean
+        sendChangePasswordEmail(email: String!): Boolean
+
         createUser(token: String!, name: String!, password: String!): User
         updateUser(id: Int!, name: String, email: String, admin: Boolean): User
         deleteUser(id: Int!): Boolean

@@ -42,8 +42,6 @@ function App() {
 	const authenticatedRes = useQuery(AUTHENTICATED);
 	const authUserRes = useQuery(AUTH_USER);
 	const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-	// const [snackbar, setSnackbarState] = React.useState({});
-	// const [open, setOpen] = React.useState(false);
 	const history = useHistory();
 
 	const theme = React.useMemo(
@@ -74,16 +72,6 @@ function App() {
 		</ThemeProvider>
 	);
 
-	const setSnackbar = (item) => {
-		// setSnackbarState(item);
-		// setOpen(true);
-	};
-
-	// const handleClose = () => {
-	// 	setOpen(false);
-	// 	setSnackbarState({});
-	// };
-
 	if (authenticatedRes.loading || authUserRes.loading) {
 		return <ThemeWrapper>Loading...</ThemeWrapper>;
 	}
@@ -99,19 +87,19 @@ function App() {
 					{authenticatedRes.data.isAuthenticated && (
 						<Redirect to="/" />
 					)}
-					<Login setSnackbar={setSnackbar} />
+					<Login />
 				</Route>
 				<Route exact path="/create-user">
 					{authenticatedRes.data.isAuthenticated && (
 						<Redirect to="/" />
 					)}
-					<VerifyEmail setSnackbar={setSnackbar} />
+					<VerifyEmail />
 				</Route>
 				<Route exact path="/create-user/token/:token">
 					{authenticatedRes.data.isAuthenticated && (
 						<Redirect to="/" />
 					)}
-					<CreateUser setSnackbar={setSnackbar} />
+					<CreateUser />
 				</Route>
 				{!authenticatedRes.data.isAuthenticated && (
 					<Redirect to="/login" />
@@ -143,30 +131,6 @@ function App() {
 					<Route exact path="/" component={Welcome} />
 				</Layout>
 			</Switch>
-			{/* <Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "center",
-				}}
-				open={open}
-				autoHideDuration={6000}
-				onClose={handleClose}
-				ClickAwayListenerProps={{
-					onClickAway: () => {},
-				}}
-			>
-				<Alert severity={snackbar.severity || "info"}>
-					{snackbar.message || "null"}
-					<IconButton
-						size="small"
-						aria-label="close"
-						color="inherit"
-						onClick={handleClose}
-					>
-						<Close fontSize="small" />
-					</IconButton>
-				</Alert>
-			</Snackbar> */}
 		</ThemeWrapper>
 	);
 }

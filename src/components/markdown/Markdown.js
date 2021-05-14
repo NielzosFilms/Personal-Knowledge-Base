@@ -52,6 +52,7 @@ import {
 	materialLight,
 	materialOceanic,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {useSnackbar} from "notistack";
 
 const NOTE_QUERY = gql`
 	query Note($id: Int!) {
@@ -153,6 +154,7 @@ export default function MarkdownNew({isNew = false}) {
 	const [cursor, setCursor] = React.useState({start: 0, end: 0});
 	const [insertOpen, setInsertOpen] = React.useState(false);
 	const history = useHistory();
+	const {enqueueSnackbar} = useSnackbar();
 
 	React.useEffect(() => {
 		if (noteResult.data?.noteById && !isNew) {
@@ -177,7 +179,9 @@ export default function MarkdownNew({isNew = false}) {
 		if (filename !== savedFilename || text !== savedText) {
 			if (isNew) {
 				if (!filename || filename === "") {
-					alert("The filename cannot be empty.");
+					enqueueSnackbar("The filename cannot be empty.", {
+						variant: "warning",
+					});
 					return;
 				}
 				createNote({
@@ -200,16 +204,35 @@ export default function MarkdownNew({isNew = false}) {
 				});
 				setSavedFilename(filename);
 				setSavedText(text);
+				enqueueSnackbar("Saved!", {
+					variant: "success",
+				});
 			}
 		}
 	};
 
 	React.useEffect(() => {
 		if (createNoteResult.data?.createNote) {
+			enqueueSnackbar("Your note has been created!", {
+				variant: "success",
+			});
 			addNoteToHistory(createNoteResult.data.createNote.id);
 			history.push(`/notes/edit/${createNoteResult.data.createNote.id}`);
 		}
+		if (createNoteResult.error) {
+			enqueueSnackbar(createNoteResult.error.graphQLErrors[0].message, {
+				variant: "error",
+			});
+		}
 	}, [createNoteResult.loading]);
+
+	React.useEffect(() => {
+		if (updateNoteResult.error) {
+			enqueueSnackbar(updateNoteResult.error.graphQLErrors[0].message, {
+				variant: "error",
+			});
+		}
+	}, [updateNoteResult.loading]);
 
 	React.useEffect(() => {
 		if (text !== savedText || filename !== savedFilename) {

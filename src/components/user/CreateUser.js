@@ -19,6 +19,7 @@ import {makeStyles, useTheme} from "@material-ui/core/styles";
 import {Close} from "@material-ui/icons";
 import {useHistory, Redirect, useParams} from "react-router-dom";
 import VerifyEmail from "./VerifyEmail";
+import {useSnackbar} from "notistack";
 
 const CREATE_USER = gql`
 	mutation CreateUser($token: String!, $name: String!, $password: String!) {
@@ -56,7 +57,7 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default function CreateUser({setSnackbar}) {
+export default function CreateUser() {
 	const {token} = useParams();
 	const {loading, error, data} = useQuery(VERIFY_TOKEN, {
 		variables: {
@@ -69,6 +70,7 @@ export default function CreateUser({setSnackbar}) {
 	const [password, setPassword] = React.useState("");
 	const classes = useStyles();
 	const history = useHistory();
+	const {enqueueSnackbar} = useSnackbar();
 
 	React.useEffect(() => {
 		console.log(data);
@@ -89,7 +91,9 @@ export default function CreateUser({setSnackbar}) {
 			});
 			history.push("/login");
 		} else {
-			console.log("values not provided/incorrect");
+			enqueueSnackbar("No values provided or incorrect.", {
+				variant: "error",
+			});
 		}
 	};
 

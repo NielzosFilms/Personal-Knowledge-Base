@@ -18,6 +18,7 @@ import {Alert} from "@material-ui/lab";
 import {makeStyles, useTheme} from "@material-ui/core/styles";
 import {Close} from "@material-ui/icons";
 import {useHistory, Redirect} from "react-router-dom";
+import {useSnackbar} from "notistack";
 
 const SEND_EMAIL = gql`
 	mutation SendEmail($email: String!) {
@@ -44,13 +45,12 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default function VerifyEmail({setSnackbar}) {
+export default function VerifyEmail() {
 	const [sendEmail, sendEmailRes] = useMutation(SEND_EMAIL);
 	const [email, setEmail] = React.useState("");
-	const [open, setOpen] = React.useState(false);
-	const [openSuccess, setOpenSuccess] = React.useState(false);
 	const classes = useStyles();
 	const history = useHistory();
+	const {enqueueSnackbar} = useSnackbar();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -66,10 +66,17 @@ export default function VerifyEmail({setSnackbar}) {
 	React.useEffect(() => {
 		console.log(sendEmailRes);
 		if (sendEmailRes.error) {
-			setOpen(true);
+			enqueueSnackbar(sendEmailRes.error.graphQLErrors[0].message, {
+				variant: "error",
+			});
 		}
 		if (sendEmailRes.data?.sendVerifyEmail) {
-			setOpenSuccess(true);
+			enqueueSnackbar(
+				"The email has been sent, please check your inbox! (it could be in the spam folder)",
+				{
+					variant: "info",
+				}
+			);
 		}
 	}, [sendEmailRes.loading]);
 
@@ -115,50 +122,6 @@ export default function VerifyEmail({setSnackbar}) {
 					</form>
 				</Paper>
 			</Container>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "left",
-				}}
-				open={open}
-				autoHideDuration={4500}
-				onClose={() => setOpen(false)}
-			>
-				<Alert severity="error">
-					{sendEmailRes.error &&
-						sendEmailRes.error.graphQLErrors[0].message}
-					<IconButton
-						size="small"
-						aria-label="close"
-						color="inherit"
-						onClick={() => setOpen(false)}
-					>
-						<Close fontSize="small" />
-					</IconButton>
-				</Alert>
-			</Snackbar>
-			<Snackbar
-				anchorOrigin={{
-					vertical: "bottom",
-					horizontal: "left",
-				}}
-				open={openSuccess}
-				autoHideDuration={4500}
-				onClose={() => setOpenSuccess(false)}
-			>
-				<Alert severity="success">
-					The email has been sent, please check your inbox! (it could
-					be in the spam folder)
-					<IconButton
-						size="small"
-						aria-label="close"
-						color="inherit"
-						onClick={() => setOpenSuccess(false)}
-					>
-						<Close fontSize="small" />
-					</IconButton>
-				</Alert>
-			</Snackbar>
 		</>
 	);
 }

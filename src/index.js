@@ -7,6 +7,7 @@ import {ApolloClient, createHttpLink, InMemoryCache} from "@apollo/client";
 import {setContext} from "@apollo/client/link/context";
 import {ApolloProvider} from "@apollo/client/react";
 import {BrowserRouter as Router} from "react-router-dom";
+import {SnackbarProvider} from "notistack";
 
 const host = process.env.REACT_APP_APOLLO_CLIENT_HOST || process.env.HOST;
 const port =
@@ -42,7 +43,9 @@ ReactDOM.render(
 	<React.StrictMode>
 		<ApolloProvider client={client}>
 			<Router>
-				<App />
+				<SnackbarProvider>
+					<App />
+				</SnackbarProvider>
 			</Router>
 		</ApolloProvider>
 	</React.StrictMode>,

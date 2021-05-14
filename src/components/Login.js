@@ -18,6 +18,7 @@ import {Alert} from "@material-ui/lab";
 import {makeStyles, useTheme} from "@material-ui/core/styles";
 import {Close} from "@material-ui/icons";
 import {useHistory, Redirect} from "react-router-dom";
+import {useSnackbar} from "notistack";
 
 const LOGIN_QUERY = gql`
 	query Login($username: String!, $password: String!) {
@@ -44,13 +45,14 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default function Login({setSnackbar}) {
+export default function Login() {
 	const [execLogin, loginResult] = useLazyQuery(LOGIN_QUERY);
 	const [username, setUsername] = React.useState("");
 	const [password, setPassword] = React.useState("");
 	const classes = useStyles();
 	const history = useHistory();
 	const [open, setOpen] = React.useState(false);
+	const {enqueueSnackbar, closeSnackbar} = useSnackbar();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -71,16 +73,13 @@ export default function Login({setSnackbar}) {
 				localStorage.removeItem("noteHistory");
 				localStorage.setItem("token", loginResult.data.login.token);
 				history.push("/");
-				setSnackbar({
-					severity: "success",
-					message: "You are now logged in!",
-				});
-			} else {
-				setSnackbar({
-					severity: "error",
-					message: "Username and or password is incorrect.",
-				});
+				enqueueSnackbar("You are now logged in!", {variant: "success"});
 			}
+		}
+		if (loginResult.error) {
+			enqueueSnackbar(loginResult.error.graphQLErrors[0].message, {
+				variant: "error",
+			});
 		}
 	}, [loginResult.loading]);
 
