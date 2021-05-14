@@ -26,6 +26,7 @@ import {
 	People,
 } from "@material-ui/icons";
 import {useHistory, Redirect} from "react-router-dom";
+import {useSnackbar} from "notistack";
 
 const drawerWidth = 240;
 
@@ -129,6 +130,7 @@ export default function TopBar({authenticatedUser}) {
 	const history = useHistory();
 	const [open, setOpen] = React.useState(false);
 	const [doLogout, logoutResult] = useLazyQuery(LOGOUT_QUERY);
+	const {enqueueSnackbar} = useSnackbar();
 
 	const handleClick = (route) => {
 		history.push(route);
@@ -136,6 +138,7 @@ export default function TopBar({authenticatedUser}) {
 	};
 
 	const handleLogout = () => {
+		enqueueSnackbar("You have been logged out.", {variant: "info"});
 		doLogout();
 	};
 
