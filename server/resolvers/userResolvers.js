@@ -17,12 +17,21 @@ const resolvers = {
 			return models.UserGroup.findAll();
 		},
 		userGroupById: async (root, {id}, {models, loggedIn, user}) => {
-			if (!loggedIn || !user.admin) return null;
-			return models.UserGroup.findOne({
+			if (!loggedIn) return null;
+			const group = await models.UserGroup.findOne({
 				where: {
 					id,
 				},
 			});
+			const group_users = await group.getUsers();
+			if (
+				group_users.find(
+					(grp_user) => grp_user.dataValues.id === user.id
+				)
+			) {
+				return group;
+			}
+			return null;
 		},
 	},
 	Mutation: {

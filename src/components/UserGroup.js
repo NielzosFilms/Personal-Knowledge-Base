@@ -78,7 +78,7 @@ export default function UserGroup() {
 
 	if (loading) return <>Loading...</>;
 	if (error) return <>Error :(</>;
-	console.log(data);
+	if (!data.userGroupById) return <></>;
 	return (
 		<>
 			<Typography variant="h2">User group</Typography>

@@ -17,6 +17,36 @@ module.exports = {
 				name: "Notes",
 				user_id: 1,
 			},
+			{
+				ancestry: "root/",
+				name: "Notes",
+				user_id: 2,
+			},
+			{
+				ancestry: "root/",
+				name: "Notes",
+				user_id: 3,
+			},
+			{
+				ancestry: "root/",
+				name: "Notes",
+				user_id: 4,
+			},
+			{
+				ancestry: "root/",
+				name: "Notes",
+				user_id: 5,
+			},
+			{
+				ancestry: "root/",
+				name: "Notes",
+				user_id: 6,
+			},
+			{
+				ancestry: "root/",
+				name: "Notes",
+				user_id: 7,
+			},
 		]);
 	},
 
@@ -27,6 +57,7 @@ module.exports = {
 		 * Example:
 		 * await queryInterface.bulkDelete('People', null, {});
 		 */
+		await queryInterface.bulkDelete("Notes", null, {});
 		await queryInterface.bulkDelete("Folders", null, {});
 	},
 };

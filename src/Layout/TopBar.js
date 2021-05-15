@@ -226,23 +226,29 @@ export default function TopBar({authenticatedUser}) {
 					))}
 				</List>
 				<Divider />
-				<List>
-					<ListItem>
-						<Typography>User groups</Typography>
-					</ListItem>
-					{userGroupButtons.map((item) => (
-						<ListItem
-							button
-							key={item.text}
-							onClick={() => handleClick(item.route)}
-							selected={history.location.pathname === item.route}
-						>
-							<ListItemIcon>{item.icon}</ListItemIcon>
-							<ListItemText primary={item.text} />
-						</ListItem>
-					))}
-				</List>
-				<Divider />
+				{userGroupButtons.length > 0 && (
+					<>
+						<List>
+							<ListItem>
+								<Typography>User groups</Typography>
+							</ListItem>
+							{userGroupButtons.map((item) => (
+								<ListItem
+									button
+									key={item.text}
+									onClick={() => handleClick(item.route)}
+									selected={
+										history.location.pathname === item.route
+									}
+								>
+									<ListItemIcon>{item.icon}</ListItemIcon>
+									<ListItemText primary={item.text} />
+								</ListItem>
+							))}
+						</List>
+						<Divider />{" "}
+					</>
+				)}
 				{authenticatedUser.admin && (
 					<>
 						<List>
