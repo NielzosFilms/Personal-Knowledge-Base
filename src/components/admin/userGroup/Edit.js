@@ -19,17 +19,25 @@ import {
 	TableBody,
 	TableHead,
 	TableRow,
+	Dialog,
+	DialogTitle,
+	DialogActions,
+	DialogContent,
+	Button,
 } from "@material-ui/core";
 import {
 	ArrowBack,
 	DeleteOutline,
 	SaveOutlined,
 	EditOutlined,
+	Add,
+	DeleteOutlined,
 } from "@material-ui/icons";
 
 import ToolbarCustom from "../../ToolbarCustom";
 import {getDateString} from "../../../services/dateFunctions";
 import useHotkeys from "@reecelucas/react-use-hotkeys";
+import {useSnackbar} from "notistack";
 
 const QUERY_GROUP = gql`
 	query UserGroupById($id: Int!) {
@@ -56,6 +64,28 @@ const UPDATE_GROUP = gql`
 	}
 `;
 
+const CREATE_LIST = gql`
+	mutation CreateList($name: String!, $user_group_id: Int!) {
+		createGroceryList(name: $name, user_group_id: $user_group_id) {
+			id
+		}
+	}
+`;
+
+const DELETE_LIST = gql`
+	mutation DeleteList($id: Int!) {
+		deleteGroceryList(id: $id)
+	}
+`;
+
+const UPDATE_LIST = gql`
+	mutation UpdateList($id: Int!, $name: String!) {
+		updateGroceryList(id: $id, name: $name) {
+			id
+		}
+	}
+`;
+
 const useStyles = makeStyles((theme) => ({
 	divider: {
 		marginTop: theme.spacing(1),
@@ -76,28 +106,31 @@ const useStyles = makeStyles((theme) => ({
 	field: {
 		margin: theme.spacing(1),
 	},
+	actions: {
+		display: "flex",
+		justifyContent: "space-between",
+	},
 }));
 
 export default function EditUser({authenticatedUser}) {
 	const {id} = useParams();
-	const {loading, error, data} = useQuery(QUERY_GROUP, {
+	const {loading, error, data, refetch} = useQuery(QUERY_GROUP, {
 		variables: {
 			id: Number(id),
 		},
 	});
-	const [updateGroup, updateGroupRes] = useMutation(UPDATE_GROUP, {
-		refetchQueries: [
-			{
-				query: QUERY_GROUP,
-				variables: {
-					id: Number(id),
-				},
-			},
-		],
-	});
+	const [updateGroup, updateGroupRes] = useMutation(UPDATE_GROUP);
+	const [createListMut, createListMutRes] = useMutation(CREATE_LIST);
+	const [deleteListMut, deleteListMutRes] = useMutation(DELETE_LIST);
+	const [updateListMut, updateListMutRes] = useMutation(UPDATE_LIST);
 	const [group, setGroup] = React.useState({});
+	const [createList, setCreateList] = React.useState(false);
+	const [editList, setEditList] = React.useState(false);
+	const [name, setName] = React.useState("");
+	const [listId, setListId] = React.useState(null);
 	const classes = useStyles();
 	const history = useHistory();
+	const {enqueueSnackbar} = useSnackbar();
 
 	useHotkeys(["Control+s", "Meta+s"], (e) => {
 		e.preventDefault();
@@ -114,10 +147,76 @@ export default function EditUser({authenticatedUser}) {
 		if (data.userGroupById !== group) {
 			updateGroup({
 				variables: {
-					...group,
+					id: group.id,
+					name: group.name,
 				},
 			});
+			enqueueSnackbar("Saved!", {variant: "success"});
+			refetch();
 		}
+	};
+
+	const handleClose = () => {
+		setCreateList(false);
+		setEditList(false);
+		setName("");
+		setListId(null);
+	};
+
+	const handleListCreate = () => {
+		if (name) {
+			createListMut({
+				variables: {
+					name,
+					user_group_id: group.id,
+				},
+			});
+			enqueueSnackbar("Grocery list created!", {variant: "success"});
+			handleClose();
+			refetch();
+		} else {
+			enqueueSnackbar("The grocery list name is empty!", {
+				variant: "warning",
+			});
+		}
+	};
+
+	const handleDelete = (id, name) => {
+		if (
+			window.confirm(
+				`Are you sure you want to remove "${name}" grocery list and all its groceries?`
+			)
+		) {
+			deleteListMut({
+				variables: {
+					id,
+				},
+			});
+			enqueueSnackbar(`The grocery list "${name}" has been deleted.`, {
+				variant: "info",
+			});
+			refetch();
+		}
+	};
+
+	const handleListUpdate = () => {
+		updateListMut({
+			variables: {
+				id: Number(listId),
+				name,
+			},
+		});
+		enqueueSnackbar("Saved!", {
+			variant: "success",
+		});
+		refetch();
+		handleClose();
+	};
+
+	const handleListEditOpen = (id, name) => {
+		setListId(id);
+		setName(name);
+		setEditList(true);
 	};
 
 	if (loading) return <>Loading...</>;
@@ -198,41 +297,136 @@ export default function EditUser({authenticatedUser}) {
 									<TableCell align="right">Actions</TableCell>
 								</TableHead>
 								<TableBody>
-									{group?.groceryLists?.map((list) => (
-										<TableRow key={list.id} hover>
+									{group?.groceryLists?.map((list, index) => (
+										<TableRow key={index} hover>
 											<TableCell>{list.name}</TableCell>
 											<TableCell align="right">
-												{getDateString(list.createdAt)}
+												{list.createdAt
+													? getDateString(
+															list.createdAt
+													  )
+													: "Just now"}
 											</TableCell>
 											<TableCell align="right">
-												{getDateString(list.updatedAt)}
+												{list.updatedAt
+													? getDateString(
+															list.updatedAt
+													  )
+													: "Just now"}
 											</TableCell>
 											<TableCell align="right">
-												<Box
-													display="flex"
-													justifyContent="flex-end"
-												>
-													<IconButton
-														// onClick={() =>
-														// 	redirect(
-														// 		`/admin/userGroups/edit/${group.id}`
-														// 	)
-														// }
-														color="secondary"
-														size="small"
+												{list.id && (
+													<Box
+														display="flex"
+														justifyContent="flex-end"
 													>
-														<EditOutlined />
-													</IconButton>
-												</Box>
+														<IconButton
+															onClick={() =>
+																handleListEditOpen(
+																	list.id,
+																	list.name
+																)
+															}
+															color="secondary"
+															size="small"
+														>
+															<EditOutlined />
+														</IconButton>
+														<IconButton
+															onClick={() =>
+																handleDelete(
+																	list.id,
+																	list.name
+																)
+															}
+															color="secondary"
+															size="small"
+														>
+															<DeleteOutlined />
+														</IconButton>
+													</Box>
+												)}
 											</TableCell>
 										</TableRow>
 									))}
+									<TableRow>
+										<TableCell></TableCell>
+										<TableCell></TableCell>
+										<TableCell></TableCell>
+										<TableCell align="right">
+											<IconButton
+												onClick={() =>
+													setCreateList(true)
+												}
+												color="secondary"
+												size="small"
+											>
+												<Add />
+											</IconButton>
+										</TableCell>
+									</TableRow>
 								</TableBody>
 							</Table>
 						</TableContainer>
 					</Paper>
 				</Grid>
 			</Grid>
+			<Dialog open={createList}>
+				<DialogTitle>Create grocery list</DialogTitle>
+				<DialogContent>
+					<TextField
+						autoFocus
+						label="List name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						fullWidth
+					/>
+				</DialogContent>
+				<DialogActions className={classes.actions}>
+					<Button
+						variant="contained"
+						color="primary"
+						onClick={handleClose}
+					>
+						Close
+					</Button>
+					<Button
+						variant="contained"
+						color="primary"
+						onClick={handleListCreate}
+					>
+						Create
+					</Button>
+				</DialogActions>
+			</Dialog>
+			<Dialog open={editList}>
+				<DialogTitle>Edit grocery list</DialogTitle>
+				<DialogContent>
+					<TextField
+						autoFocus
+						label="List name"
+						value={name}
+						onChange={(e) => setName(e.target.value)}
+						fullWidth
+					/>
+				</DialogContent>
+				<DialogActions className={classes.actions}>
+					<Button
+						variant="contained"
+						color="primary"
+						onClick={handleClose}
+					>
+						Close
+					</Button>
+					<Button
+						variant="contained"
+						color="primary"
+						onClick={handleListUpdate}
+					>
+						Save
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</>
 	);
 }

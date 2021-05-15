@@ -24,7 +24,47 @@ const resolvers = {
 			});
 		},
 	},
-	Mutation: {},
+	Mutation: {
+		createGroceryList: async (
+			root,
+			{name, user_group_id},
+			{models, loggedIn, user}
+		) => {
+			if (!loggedIn || !user.admin) return null;
+			const list = await models.GroceryList.create({
+				name,
+				user_group_id,
+			});
+			return await models.GroceryList.findByPk(list.id);
+		},
+		updateGroceryList: async (
+			root,
+			{id, name},
+			{models, loggedIn, user}
+		) => {
+			if (!loggedIn || !user.admin) return null;
+			await models.GroceryList.update(
+				{
+					name,
+				},
+				{
+					where: {
+						id,
+					},
+				}
+			);
+			return await models.GroceryList.findByPk(id);
+		},
+		deleteGroceryList: async (root, {id}, {models, loggedIn, user}) => {
+			if (!loggedIn || !user.admin) return false;
+			await models.GroceryList.destroy({
+				where: {
+					id,
+				},
+			});
+			return true;
+		},
+	},
 	Grocery: {
 		groceryList: async (root, args, {models, loggedIn}) => {
 			if (!loggedIn) return null;

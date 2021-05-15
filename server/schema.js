@@ -113,6 +113,10 @@ const typeDefs = gql(`
         createFolder(ancestry: String!, name: String!): Folder
         updateFolder(id: Int!, ancestry: String, name: String): Folder
         deleteFolder(id: Int!): Boolean
+
+        createGroceryList(name: String!, user_group_id: Int!): GroceryList
+        updateGroceryList(id: Int!, name: String!): GroceryList
+        deleteGroceryList(id: Int!): Boolean
     }
 `);
 

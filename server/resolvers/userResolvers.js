@@ -110,6 +110,25 @@ const resolvers = {
 			return true;
 		},
 		updateUserGroup: async (root, {id, name}, {models}) => {
+			// const db_lists = await models.GroceryList.findAll({
+			// 	where: {
+			// 		user_group_id: id,
+			// 	},
+			// });
+
+			// db_lists.map(async (list) => {
+			// 	const match = groceryLists.find((e) => e.id === list.id);
+			// 	if (match) {
+			// 		list.name = match.name;
+			// 		list.save();
+			// 		groceryLists.splice(groceryLists.indexOf(match), 1);
+			// 	} else {
+			// 		list.destroy();
+			// 	}
+			// });
+
+			// await models.GroceryList.bulkCreate(groceryLists);
+
 			await models.UserGroup.update(
 				{
 					name,
