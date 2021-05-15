@@ -46,18 +46,6 @@ import {addNoteToHistory} from "../../services/noteHistory";
 import {handleDownload} from "./downloadHandler";
 import useHotkeys from "@reecelucas/react-use-hotkeys";
 
-// const NOTE_QUERY = gql`
-// 	query Notes($search: String) {
-// 		notes(search: $search) {
-// 			id
-// 			filename
-// 			content
-// 			createdAt
-// 			updatedAt
-// 		}
-// 	}
-// `;
-
 const FOLDER_QUERY = gql`
 	query Folder($id: Int) {
 		folderByIdOrRoot(id: $id) {

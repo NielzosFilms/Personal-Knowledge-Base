@@ -93,7 +93,7 @@ const typeDefs = gql(`
         folderByIdOrRoot(id: Int): Folder
         folderByAncestry(ancestry: String!): Folder
 
-        groceriesByUserGroupId(id: Int!): [Grocery]
+        groceryListById(id: Int!): GroceryList
     }
 
     type Mutation {

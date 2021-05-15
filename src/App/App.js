@@ -26,6 +26,8 @@ import EditUser from "../components/admin/EditUser";
 import CreateUser from "../components/user/CreateUser";
 import VerifyEmail from "../components/user/VerifyEmail";
 
+import GroceryList from "../components/grocery/List";
+
 import AuthenticatedUserProvider from "../services/AuthenticatedUserProvider";
 
 const AUTHENTICATED = gql`
@@ -120,6 +122,12 @@ function App() {
 
 					<Route exact path="/notes/edit/:id" component={Markdown} />
 					<Route exact path="/userGroups/:id" component={UserGroup} />
+
+					<Route
+						exact
+						path="/userGroups/groceryList/:id"
+						component={GroceryList}
+					/>
 
 					<Route path="/admin">
 						{authUserRes.data?.getAuthenticatedUser &&

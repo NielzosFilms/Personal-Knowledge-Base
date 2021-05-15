@@ -161,11 +161,6 @@ export default function UserGroup() {
 					<Paper className={classes.paper}>
 						<TableContainer>
 							<Table>
-								<TableHead>
-									<TableRow>
-										<TableCell>Name</TableCell>
-									</TableRow>
-								</TableHead>
 								<TableBody>
 									{data.userGroupById.users.map((user) => (
 										<TableRow key={user.id}>
