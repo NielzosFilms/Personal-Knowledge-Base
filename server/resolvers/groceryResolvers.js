@@ -57,6 +57,11 @@ const resolvers = {
 		},
 		deleteGroceryList: async (root, {id}, {models, loggedIn, user}) => {
 			if (!loggedIn || !user.admin) return false;
+			await models.Grocery.destroy({
+				where: {
+					grocery_list_id: id,
+				},
+			});
 			await models.GroceryList.destroy({
 				where: {
 					id,
