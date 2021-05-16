@@ -117,6 +117,10 @@ const typeDefs = gql(`
         createGroceryList(name: String!, user_group_id: Int!): GroceryList
         updateGroceryList(id: Int!, name: String!): GroceryList
         deleteGroceryList(id: Int!): Boolean
+
+        createGrocery(grocery_list_id: Int!, name: String!, needed: Boolean): Grocery
+        updateGrocery(id: Int!, name: String, needed: Boolean): Grocery
+        deleteGrocery(id: Int!): Boolean
     }
 `);
 

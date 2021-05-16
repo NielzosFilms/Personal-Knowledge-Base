@@ -9,12 +9,6 @@ import {
 	Divider,
 	ButtonGroup,
 	Button,
-	Table,
-	TableContainer,
-	TableRow,
-	TableCell,
-	TableHead,
-	TableBody,
 	IconButton,
 } from "@material-ui/core";
 import {Check} from "@material-ui/icons";
@@ -22,8 +16,10 @@ import {makeStyles} from "@material-ui/core/styles";
 import Grocery from "./Grocery";
 
 import ToolbarCustom from "../ToolbarCustom";
+import AddDialog from "./AddDialog";
+import ListRenderer from "./ListRenderer";
 
-const LIST_QUERY = gql`
+export const LIST_QUERY = gql`
 	query List($id: Int!) {
 		groceryListById(id: $id) {
 			name
@@ -44,16 +40,6 @@ const useStyles = makeStyles((theme) => ({
 	paper: {
 		padding: theme.spacing(2),
 	},
-	title: {
-		flexGrow: 1,
-		textOverflow: "ellipsis",
-		overflow: "hidden",
-		whiteSpace: "nowrap",
-	},
-	button: {
-		marginLeft: theme.spacing(2),
-		marginRight: theme.spacing(2),
-	},
 }));
 
 export default function List() {
@@ -68,6 +54,7 @@ export default function List() {
 	);
 	const [needed, setNeeded] = React.useState([]);
 	const [other, setOther] = React.useState([]);
+	const [addOpen, setAddOpen] = React.useState(false);
 	const classes = useStyles();
 
 	React.useEffect(() => {
@@ -96,67 +83,13 @@ export default function List() {
 	if (error) return <>Error :(</>;
 	return (
 		<>
-			<ToolbarCustom>
-				<Box display="flex" style={{width: "100%"}}>
-					<Typography variant="h6" className={classes.title}>
-						{data.groceryListById.name}
-					</Typography>
-					<Box display="flex">
-						<Button
-							variant="contained"
-							color="secondary"
-							// onClick={() => setView(!view)}
-							className={classes.button}
-						>
-							Add
-						</Button>
-						<ButtonGroup color="primary">
-							<Button
-								variant={view ? "contained" : "outlined"}
-								onClick={() => setView(!view)}
-							>
-								List
-							</Button>
-							<Button
-								variant={!view ? "contained" : "outlined"}
-								onClick={() => setView(!view)}
-							>
-								Grid
-							</Button>
-						</ButtonGroup>
-					</Box>
-				</Box>
-			</ToolbarCustom>
-			{view ? (
-				<TableContainer component={Paper}>
-					<Table>
-						<TableHead>
-							<TableRow>
-								<TableCell>Name</TableCell>
-								<TableCell align="right">Actions</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{needed.map((item, index) => (
-								<TableRow hover key={index}>
-									<TableCell>{item.name}</TableCell>
-									<TableCell align="right">
-										<Button color="secondary" size="small">
-											Check
-										</Button>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</TableContainer>
-			) : (
-				<Box display="flex" flexWrap="wrap">
-					{needed.map((item, index) => (
-						<Grocery key={index} {...item} />
-					))}
-				</Box>
-			)}
+			<AddDialog open={addOpen} setOpen={setAddOpen} items={other} />
+			<ListRenderer
+				title={data.groceryListById.name}
+				items={needed}
+				setAddOpen={setAddOpen}
+				variant="grocery"
+			/>
 		</>
 	);
 }
