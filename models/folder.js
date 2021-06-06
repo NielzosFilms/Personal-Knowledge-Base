@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
+			ancestryResolved: {
+				type: DataTypes.VIRTUAL,
+				allowNull: true,
+			},
 			name: {
 				type: DataTypes.STRING,
 				allowNull: false,

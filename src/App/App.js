@@ -16,10 +16,14 @@ import NotesList from "../components/markdown/List";
 import Markdown from "../components/markdown/Markdown";
 import Welcome from "../components/Welcome";
 
+import GlobalSearch from "../components/markdown/GlobalSearch";
+
 import UserGroupsList from "../components/admin/userGroup/List";
 import UserGroupEdit from "../components/admin/userGroup/Edit";
 
 import UserGroup from "../components/UserGroup";
+
+import {QUERY_USERS} from "../components/admin/queries";
 
 import UserList from "../components/admin/UserList";
 import EditUser from "../components/admin/EditUser";
@@ -29,6 +33,7 @@ import VerifyEmail from "../components/user/VerifyEmail";
 import GroceryList from "../components/grocery/List";
 
 import AuthenticatedUserProvider from "../services/AuthenticatedUserProvider";
+import DataProvider from "../services/DataProvider";
 
 const AUTHENTICATED = gql`
 	query {
@@ -41,6 +46,24 @@ const AUTH_USER = gql`
 		getAuthenticatedUser {
 			name
 			admin
+		}
+	}
+`;
+
+const GLOBAL_NOTES = gql`
+	query {
+		notes {
+			id
+			filename
+			content
+			folder {
+				id
+				ancestry
+				ancestryResolved
+				name
+			}
+			createdAt
+			updatedAt
 		}
 	}
 `;
@@ -68,8 +91,10 @@ function App() {
 	);
 
 	history.listen(() => {
-		authenticatedRes.refetch();
-		authUserRes.refetch();
+		if (history.location.pathname === "/login") {
+			authenticatedRes.refetch();
+			authUserRes.refetch();
+		}
 	});
 
 	const ThemeWrapper = ({children}) => (
@@ -112,6 +137,11 @@ function App() {
 					<Redirect to="/login" />
 				)}
 				<Layout>
+					<Route path="/notes">
+						<DataProvider query={GLOBAL_NOTES} queryName="notes">
+							<GlobalSearch />
+						</DataProvider>
+					</Route>
 					<Route exact path="/notes">
 						<NotesList />
 					</Route>
@@ -135,7 +165,11 @@ function App() {
 								<Redirect to="/" />
 							)}
 					</Route>
-					<Route exact path="/admin/users" component={UserList} />
+					<Route exact path="/admin/users">
+						<DataProvider query={QUERY_USERS} queryName="users">
+							<UserList />
+						</DataProvider>
+					</Route>
 					<Route exact path="/admin/users/edit/:id">
 						<AuthenticatedUserProvider>
 							<EditUser />

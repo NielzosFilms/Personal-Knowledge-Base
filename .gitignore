@@ -10,6 +10,7 @@
 
 # production
 /build
+/sslcert
 
 # misc
 .DS_Store

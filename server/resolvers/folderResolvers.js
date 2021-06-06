@@ -155,6 +155,27 @@ const resolvers = {
 				},
 			});
 		},
+		ancestryResolved: async (root, args, {models, loggedIn, user}) => {
+			if (!loggedIn) return null;
+			const ancestry_split = root.dataValues.ancestry
+				.split("root/")
+				.pop()
+				.split("/");
+			ancestry_split.push(`${root.dataValues.id}`);
+
+			const folders = await models.Folder.findAll({
+				where: {
+					id: ancestry_split,
+				},
+			});
+
+			let ancestry = "";
+			folders.forEach((folder) => {
+				ancestry += `${folder.name}/`;
+			});
+
+			return ancestry;
+		},
 	},
 };
 

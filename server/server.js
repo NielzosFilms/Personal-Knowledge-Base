@@ -3,13 +3,35 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const app = express();
 const dotenv = require("dotenv");
+const fs = require("fs");
 dotenv.config();
 
+const http = require("http");
+const https = require("https");
+const privateKey = fs.readFileSync(
+	path.join(__dirname, "../sslcert", "server.key")
+);
+const certificate = fs.readFileSync(
+	path.join(__dirname, "../sslcert", "server.crt")
+);
+
 const {ApolloServer, AuthenticationError} = require("apollo-server-express");
-const typeDefs = require(path.join(__dirname, "/schema"));
-const resolvers = require(path.join(__dirname, "/resolvers"));
+const typeDefs = require(path.join(__dirname, "schema"));
+const resolvers = require(path.join(__dirname, "resolvers"));
 
 const sequelize = require(path.join(__dirname, "../models/index"));
+
+const credentials = {
+	key: privateKey,
+	cert: certificate,
+};
+
+const corsOptions = {
+	origin: `http://${process.env.HOST || "localhost"}:${
+		process.env.SERVER_PORT || "8080"
+	}`,
+	credentials: true,
+};
 
 const server = new ApolloServer({
 	typeDefs,
@@ -57,13 +79,6 @@ const server = new ApolloServer({
 	},
 });
 
-const corsOptions = {
-	origin: `http://${process.env.HOST || "localhost"}:${
-		process.env.SERVER_PORT || "8080"
-	}`,
-	credentials: true,
-};
-
 console.log(process.env.NODE_ENV);
 
 server.applyMiddleware({
@@ -74,17 +89,16 @@ server.applyMiddleware({
 
 app.use(express.static(path.join(__dirname, "../build")));
 
-// app.get("/ping", function (req, res) {
-//     return res.send("pong");
-// });
-
-// app.get("/", function (req, res) {
-//     res.sendFile(path.join(__dirname, "../build", "index.html"));
-// });
-
 app.use(function (req, res) {
 	res.sendFile(path.join(__dirname, "../build", "index.html"));
 });
 
-app.listen(process.env.SERVER_PORT || 8080);
+// app.listen(process.env.SERVER_PORT || 8080);
+
+// const httpServer = http.createServer(app);
+// httpServer.listen(8080);
+const httpsServer = https.createServer(credentials, app);
+httpsServer.listen(8080);
+// httpsServer.listen(8080);
+
 console.log(`Listening on port ${process.env.SERVER_PORT || 8080}`);

@@ -200,12 +200,14 @@ export default function List() {
 	};
 
 	const handleDeleteClick = (id) => {
-		deleteNote({
-			variables: {
-				id,
-			},
-		});
-		refetch();
+		if (window.confirm("Are you sure you want to delete this note?")) {
+			deleteNote({
+				variables: {
+					id,
+				},
+			});
+			refetch();
+		}
 	};
 
 	const handleCrumClick = (crum, index) => {

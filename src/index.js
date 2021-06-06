@@ -16,7 +16,7 @@ const port =
 console.log(process.env.NODE_ENV);
 
 const httpLink = createHttpLink({
-	uri: `http://${host || "localhost"}:${port || "8080"}/graphql`,
+	uri: `https://${host || "localhost"}:${port || "8080"}/graphql`,
 	...(process.env.NODE_ENV === "production" && {credentials: "include"}),
 });
 

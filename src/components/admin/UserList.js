@@ -1,5 +1,4 @@
 import React from "react";
-import {useQuery, gql} from "@apollo/client";
 import {useHistory} from "react-router-dom";
 
 import {
@@ -20,31 +19,8 @@ import ToolbarCustom from "../ToolbarCustom";
 
 import {getDateString} from "../../services/dateFunctions";
 
-const QUERY_USERS = gql`
-	query {
-		users {
-			id
-			name
-			admin
-			createdAt
-			updatedAt
-		}
-	}
-`;
-
-export default function UserList() {
-	const {loading, error, data, refetch} = useQuery(QUERY_USERS);
-	const [users, setUsers] = React.useState([]);
+export default function UserList({data, refetch}) {
 	const history = useHistory();
-
-	React.useEffect(() => {
-		if (data?.users) {
-			setUsers(data.users);
-		}
-	}, [data]);
-
-	if (loading) return <>Loading...</>;
-	if (error) return <>Error :(</>;
 
 	const redirect = (to) => {
 		history.push(to);
@@ -76,7 +52,7 @@ export default function UserList() {
 						<TableCell align="right">Actions</TableCell>
 					</TableHead>
 					<TableBody>
-						{users.map((user) => (
+						{data.map((user) => (
 							<TableRow
 								key={user.id}
 								hover

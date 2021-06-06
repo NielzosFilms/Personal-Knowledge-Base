@@ -35,6 +35,7 @@ const typeDefs = gql(`
     type Folder {
         id: Int!
         ancestry: String!
+        ancestryResolved: String
         name: String!
         notes: [Note]
         subFolders: [Folder]
