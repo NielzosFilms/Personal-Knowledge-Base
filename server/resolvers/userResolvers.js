@@ -4,8 +4,19 @@ const resolvers = {
 			if (!loggedIn) return null;
 			return models.User.findAll();
 		},
-		userById: async (root, {id}, {models, loggedIn}) => {
-			if (!loggedIn) return null;
+		userById: async (root, {id, token}, {models, loggedIn}) => {
+			if (token) {
+				const emailToken = await models.EmailToken.findOne({
+					where: {
+						token,
+					},
+				});
+				if (!emailToken) {
+					return null;
+				}
+			} else {
+				if (!loggedIn) return null;
+			}
 			return models.User.findOne({
 				where: {
 					id,
@@ -68,15 +79,27 @@ const resolvers = {
 		},
 		updateUser: async (
 			root,
-			{id, name, email, admin},
+			{id, name, email, admin, password, token},
 			{models, loggedIn, user}
 		) => {
-			if (!loggedIn && !user.admin) return null;
+			if (token) {
+				const emailToken = await models.EmailToken.findOne({
+					where: {
+						token,
+					},
+				});
+				if (!emailToken) {
+					return null;
+				}
+			} else {
+				if (!loggedIn && !user.admin) return null;
+			}
 			await models.User.update(
 				{
 					name,
 					email,
 					admin,
+					...(password && {password}),
 				},
 				{
 					where: {

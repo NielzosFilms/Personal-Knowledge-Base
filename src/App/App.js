@@ -26,9 +26,10 @@ import UserGroup from "../components/UserGroup";
 import {QUERY_USERS} from "../components/admin/queries";
 
 import UserList from "../components/admin/UserList";
-import EditUser from "../components/admin/EditUser";
+import EditUserAdmin from "../components/admin/EditUser";
 import CreateUser from "../components/user/CreateUser";
 import VerifyEmail from "../components/user/VerifyEmail";
+import EditUser from "../components/user/EditUser";
 
 import GroceryList from "../components/grocery/List";
 
@@ -121,6 +122,9 @@ function App() {
 					)}
 					<Login />
 				</Route>
+				<Route exact path="/reset/:user_id/token/:token">
+					<EditUser />
+				</Route>
 				<Route exact path="/create-user">
 					{authenticatedRes.data.isAuthenticated && (
 						<Redirect to="/" />
@@ -172,7 +176,7 @@ function App() {
 					</Route>
 					<Route exact path="/admin/users/edit/:id">
 						<AuthenticatedUserProvider>
-							<EditUser />
+							<EditUserAdmin />
 						</AuthenticatedUserProvider>
 					</Route>
 

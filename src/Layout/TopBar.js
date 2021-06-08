@@ -1,5 +1,5 @@
 import React from "react";
-import {useQuery, useLazyQuery, gql} from "@apollo/client";
+import {useQuery, useLazyQuery, gql, useMutation} from "@apollo/client";
 import clsx from "clsx";
 import {makeStyles, useTheme} from "@material-ui/core/styles";
 import {
@@ -15,6 +15,8 @@ import {
 	ListItemIcon,
 	ListItemText,
 	Box,
+	Link,
+	CircularProgress,
 } from "@material-ui/core";
 import {
 	Menu,
@@ -104,6 +106,12 @@ const LOGOUT_QUERY = gql`
 	}
 `;
 
+const CHANGE_PASSWORD_MUTATION = gql`
+	mutation SendChangePasswordEmail($email: String!) {
+		sendChangePasswordEmail(email: $email)
+	}
+`;
+
 const menuButtons = [
 	{
 		text: "Home",
@@ -136,6 +144,9 @@ export default function TopBar({authenticatedUser}) {
 	const history = useHistory();
 	const [open, setOpen] = React.useState(false);
 	const [doLogout, logoutResult] = useLazyQuery(LOGOUT_QUERY);
+	const [sendResetEmail, sendResetEmailResult] = useMutation(
+		CHANGE_PASSWORD_MUTATION
+	);
 	const {enqueueSnackbar} = useSnackbar();
 
 	const userGroupButtons = [
@@ -163,6 +174,23 @@ export default function TopBar({authenticatedUser}) {
 		localStorage.removeItem("noteHistory");
 		history.push("/login");
 	}
+
+	const handleChangePassword = () => {
+		sendResetEmail({
+			variables: {
+				email: authenticatedUser.email,
+			},
+		});
+	};
+
+	React.useEffect(() => {
+		if (sendResetEmailResult?.data?.sendChangePasswordEmail) {
+			enqueueSnackbar(
+				`Email has been sent to: ${authenticatedUser.email}`,
+				{variant: "info"}
+			);
+		}
+	}, [sendResetEmailResult.loading]);
 
 	return (
 		<>
@@ -285,9 +313,21 @@ export default function TopBar({authenticatedUser}) {
 								<i>Administrator</i>
 							</Typography>
 						)}
+						<Link
+							style={{cursor: "pointer"}}
+							color="secondary"
+							onClick={handleChangePassword}
+						>
+							Change password/username
+						</Link>
 					</Box>
 				</ListItem>
 			</Drawer>
+			{sendResetEmailResult?.loading && (
+				<Box position="absolute" style={{bottom: 10, left: 10}}>
+					<CircularProgress color="primary" />
+				</Box>
+			)}
 		</>
 	);
 }

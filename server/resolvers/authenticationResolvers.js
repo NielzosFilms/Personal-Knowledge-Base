@@ -119,6 +119,50 @@ const resolvers = {
 				throw new Error("A user was found with this email address.");
 			}
 		},
+		sendChangePasswordEmail: async (root, {email}, {models}) => {
+			const token = crypto.randomBytes(64).toString("hex");
+			if (!email) throw new Error("No email has been provided.");
+			const user = await models.User.findOne({
+				where: {
+					email,
+				},
+			});
+			if (!user)
+				throw new Error("No user with this email has been found.");
+			const port =
+				process.env.NODE_ENV === "production"
+					? process.env.SERVER_PORT
+					: "3000";
+			return transporter
+				.sendMail({
+					from: "NielzosFilms Knowledge Base",
+					to: email,
+					subject: "Reset password / change username link.",
+
+					html: `<a href="http://${process.env.HOST}:${port}/reset/${user.id}/token/${token}">Click here to reset your password / change username</a>`,
+				})
+				.then(async (res) => {
+					await models.EmailToken.destroy({
+						where: {
+							email,
+						},
+					});
+
+					let expiration = new Date();
+					expiration.setHours(expiration.getHours() + 1);
+					const emailToken = await models.EmailToken.create({
+						token,
+						email,
+						expiration,
+					});
+					await emailToken.save();
+					return true;
+				})
+				.catch((error) => {
+					console.log(error);
+					throw new Error("The email was invalid.");
+				});
+		},
 	},
 };
 

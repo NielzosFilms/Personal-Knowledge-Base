@@ -81,7 +81,7 @@ const typeDefs = gql(`
         verifyEmailToken(token: String!): VerifyEmailTokenPayload
 
         users: [User]
-        userById(id: Int!): User
+        userById(id: Int!, token: String): User
 
         userGroups: [UserGroup]
         userGroupById(id: Int!): UserGroup
@@ -102,7 +102,7 @@ const typeDefs = gql(`
         sendChangePasswordEmail(email: String!): Boolean
 
         createUser(token: String!, name: String!, password: String!): User
-        updateUser(id: Int!, name: String, email: String, admin: Boolean): User
+        updateUser(id: Int!, name: String, email: String, admin: Boolean, password: String, token: String): User
         deleteUser(id: Int!): Boolean
 
         updateUserGroup(id: Int!, name: String!): UserGroup

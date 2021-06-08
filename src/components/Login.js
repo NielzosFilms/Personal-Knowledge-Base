@@ -1,5 +1,5 @@
 import React from "react";
-import {useQuery, useLazyQuery, gql} from "@apollo/client";
+import {useQuery, useLazyQuery, gql, useMutation} from "@apollo/client";
 import {
 	TextField,
 	Button,
@@ -13,6 +13,12 @@ import {
 	Snackbar,
 	IconButton,
 	Link,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+	CircularProgress,
+	Box,
 } from "@material-ui/core";
 import {Alert} from "@material-ui/lab";
 import {makeStyles, useTheme} from "@material-ui/core/styles";
@@ -26,6 +32,12 @@ const LOGIN_QUERY = gql`
 			success
 			token
 		}
+	}
+`;
+
+const CHANGE_PASSWORD_MUTATION = gql`
+	mutation SendChangePasswordEmail($email: String!) {
+		sendChangePasswordEmail(email: $email)
 	}
 `;
 
@@ -53,6 +65,7 @@ export default function Login() {
 	const history = useHistory();
 	const [open, setOpen] = React.useState(false);
 	const {enqueueSnackbar, closeSnackbar} = useSnackbar();
+	const [emailOpen, setEmailOpen] = React.useState(false);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -127,9 +140,17 @@ export default function Login() {
 							</Button>
 						</FormControl>
 					</form>
-					<Link href="#" onClick={() => history.push("/create-user")}>
-						Create account
-					</Link>
+					<Box display="flex" flexDirection="column">
+						<Link
+							href="#"
+							onClick={() => history.push("/create-user")}
+						>
+							Create account
+						</Link>
+						<Link href="#" onClick={() => setEmailOpen(true)}>
+							Reset password
+						</Link>
+					</Box>
 				</Paper>
 			</Container>
 			<Snackbar
@@ -153,6 +174,73 @@ export default function Login() {
 					</IconButton>
 				</Alert>
 			</Snackbar>
+			<ChangePasswordDialog open={emailOpen} setOpen={setEmailOpen} />
+		</>
+	);
+}
+
+function ChangePasswordDialog({open, setOpen}) {
+	const [sendEmail, sendEmailRes] = useMutation(CHANGE_PASSWORD_MUTATION);
+	const [email, setEmail] = React.useState("");
+	const {enqueueSnackbar} = useSnackbar();
+
+	const handleClose = () => {
+		setEmail("");
+		setOpen(false);
+	};
+
+	const handleSubmit = () => {
+		if (!email) {
+			enqueueSnackbar("No email given.", {variant: "warning"});
+		}
+		sendEmail({variables: {email}});
+	};
+
+	React.useEffect(() => {
+		if (sendEmailRes.error) {
+			enqueueSnackbar(sendEmailRes.error.message, {variant: "error"});
+		}
+		if (sendEmailRes?.data?.sendChangePasswordEmail) {
+			enqueueSnackbar(`Email has been sent to ${email}`, {
+				variant: "info",
+			});
+			handleClose();
+		}
+	}, [sendEmailRes.loading]);
+
+	return (
+		<>
+			<Dialog open={open} onClose={handleClose} fullWidth>
+				<DialogTitle>Reset password / change username</DialogTitle>
+				<DialogContent>
+					<TextField
+						label="Email"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						fullWidth
+						autoFocus
+					/>
+				</DialogContent>
+				<DialogActions>
+					<Box
+						width="100%"
+						display="flex"
+						justifyContent="space-between"
+					>
+						<Button color="primary" onClick={handleClose}>
+							Close
+						</Button>
+						<Button color="primary" onClick={handleSubmit}>
+							Send email
+						</Button>
+					</Box>
+				</DialogActions>
+			</Dialog>
+			{sendEmailRes?.loading && (
+				<Box position="absolute" style={{bottom: 10, left: 10}}>
+					<CircularProgress color="primary" />
+				</Box>
+			)}
 		</>
 	);
 }
