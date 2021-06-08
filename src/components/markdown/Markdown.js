@@ -36,6 +36,7 @@ import {
 	InsertPhoto,
 	FormatListBulleted,
 	FormatListNumbered,
+	CalendarTodayOutlined,
 } from "@material-ui/icons";
 import {makeStyles, useTheme} from "@material-ui/core/styles";
 import {useQuery, useMutation, gql} from "@apollo/client";
@@ -272,6 +273,17 @@ export default function MarkdownNew({isNew = false}) {
 			{
 				display: (
 					<>
+						<CalendarTodayOutlined /> Date
+					</>
+				),
+				onClick: () => {
+					const date = new Date();
+					handleTextInsert(date.toLocaleString());
+				},
+			},
+			{
+				display: (
+					<>
 						<Toc /> Table
 					</>
 				),
@@ -318,7 +330,10 @@ export default function MarkdownNew({isNew = false}) {
 						<InsertPhoto /> Image
 					</>
 				),
-				onClick: () => alert("Not a function yet :("),
+				onClick: () =>
+					enqueueSnackbar("Not a function yet :(", {
+						variant: "warning",
+					}),
 			},
 		];
 		return (

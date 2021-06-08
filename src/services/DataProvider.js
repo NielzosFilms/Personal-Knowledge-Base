@@ -34,5 +34,7 @@ export default function DataProvider({query, variables, queryName, children}) {
 
 	// if (!resData) return <Typography variant="h2">No data found.</Typography>;
 
+	if (!resData) return <></>;
+
 	return <>{cloneElement(children, {data: resData, refetch})}</>;
 }

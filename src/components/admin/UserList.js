@@ -22,6 +22,8 @@ import {getDateString} from "../../services/dateFunctions";
 export default function UserList({data, refetch}) {
 	const history = useHistory();
 
+	console.log(data);
+
 	const redirect = (to) => {
 		history.push(to);
 	};
