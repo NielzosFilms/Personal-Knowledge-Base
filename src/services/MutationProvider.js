@@ -1,47 +1,43 @@
 import { useState, useEffect, cloneElement } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { CircularProgress, Box, Typography } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 
-export function DataProvider({
-    query,
-    variables,
+export function MutationProvider({
+    mutation,
     returnName = null,
     children,
     ...props
 }) {
-    const queryResult = useQuery(query, {
-        variables,
-    });
+    const [doMutation, mutationResult] = useMutation(mutation);
     const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
-        if (queryResult.error) {
-            enqueueSnackbar(queryResult.error.message, { variant: "error" });
+        if (mutationResult.error) {
+            enqueueSnackbar(mutationResult.error.message, { variant: "error" });
         }
-    }, [queryResult.loading]);
+    }, [mutationResult.loading]);
 
-    if (queryResult.loading)
+    if (mutationResult.loading)
         return (
             <Box display="flex" justifyContent="center">
                 <CircularProgress color="primary" />
             </Box>
         );
-    if (queryResult.error)
+    if (mutationResult.error)
         return (
             <>
                 <Typography variant="h2">Error :(</Typography>
-                <Typography>{queryResult.error.message}</Typography>
+                <Typography>{mutationResult.error.message}</Typography>
             </>
         );
-
-    if (!queryResult.data) return <Typography variant="h2">No data</Typography>;
 
     return (
         <>
             {cloneElement(children, {
-                [returnName ? returnName : Object.keys(queryResult.data)[0]]:
-                    queryResult,
+                [returnName ? returnName : "doMutation"]: doMutation,
+                [returnName ? `${returnName}Result` : "mutationResult"]:
+                    mutationResult,
                 ...props,
             })}
         </>

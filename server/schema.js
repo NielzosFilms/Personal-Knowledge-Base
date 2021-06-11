@@ -1,4 +1,4 @@
-const {gql} = require("apollo-server-express");
+const { gql } = require("apollo-server-express");
 
 const typeDefs = gql(`
     scalar Date
@@ -73,10 +73,8 @@ const typeDefs = gql(`
     }
 
     type Query {
-        login(username: String!, password: String!): LoginPayload
         isAuthenticated: Boolean
         getAuthenticatedUser: User
-        logout: Boolean
 
         verifyEmailToken(token: String!): VerifyEmailTokenPayload
 
@@ -98,6 +96,9 @@ const typeDefs = gql(`
     }
 
     type Mutation {
+        login(username: String!, password: String!): LoginPayload
+        logout: Boolean
+        
         sendVerifyEmail(email: String!): Boolean
         sendChangePasswordEmail(email: String!): Boolean
 
