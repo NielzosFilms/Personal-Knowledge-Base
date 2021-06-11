@@ -73,6 +73,17 @@ const GLOBAL_NOTES = gql`
     }
 `;
 
+const GLOBAL_FOLDERS = gql`
+    query {
+        folders {
+            id
+            name
+            ancestry
+            ancestryResolved
+        }
+    }
+`;
+
 function App() {
     const authenticatedRes = useQuery(AUTHENTICATED);
     const authUserRes = useQuery(AUTH_USER);
@@ -151,7 +162,9 @@ function App() {
                 <Layout>
                     <Route path="/notes">
                         <DataProvider query={GLOBAL_NOTES}>
-                            <GlobalSearch />
+                            <DataProvider query={GLOBAL_FOLDERS}>
+                                <GlobalSearch />
+                            </DataProvider>
                         </DataProvider>
                     </Route>
                     <Route exact path="/notes">

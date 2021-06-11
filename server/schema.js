@@ -109,7 +109,7 @@ const typeDefs = gql(`
         updateUserGroup(id: Int!, name: String!): UserGroup
 
         createNote(filename: String!, content: String, folderId: Int): Note
-        updateNote(id: Int!, filename: String, content: String): Note
+        updateNote(id: Int!, filename: String, content: String, folderId: Int): Note
         deleteNote(id: Int!): Boolean
 
         createFolder(ancestry: String!, name: String!): Folder

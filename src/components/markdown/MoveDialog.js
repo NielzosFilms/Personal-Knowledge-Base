@@ -13,10 +13,19 @@ import {
     Tooltip,
 } from "@material-ui/core";
 import { SearchOutlined, Folder } from "@material-ui/icons";
+import { useMutation, gql } from "@apollo/client";
 import { Autocomplete } from "@material-ui/lab";
 import { useSnackbar } from "notistack";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory } from "react-router-dom";
+
+const UPDATE_NOTE = gql`
+    mutation UpdateNote($id: Int!, $folderId: Int) {
+        updateNote(id: $id, folderId: $folderId) {
+            id
+        }
+    }
+`;
 
 const useStyles = makeStyles((theme) => ({
     disabled: {
@@ -33,10 +42,16 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function GlobalSearch({ notes, folders }) {
+export default function MoveDialog({
+    open,
+    setOpen,
+    movingObject,
+    folders,
+    refetch,
+}) {
+    const [updateNote, updateNoteResult] = useMutation(UPDATE_NOTE);
     const [search, setSearch] = useState("");
     const [selected, setSelected] = useState(null);
-    const [open, setOpen] = useState(false);
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
     const history = useHistory();
@@ -54,7 +69,7 @@ export default function GlobalSearch({ notes, folders }) {
 
     const handleOpen = () => {
         setSearch("");
-        notes.refetch();
+        folders.refetch();
         setOpen(!open);
     };
 
@@ -69,19 +84,23 @@ export default function GlobalSearch({ notes, folders }) {
 
     const openSelectedNote = () => {
         if (selected) {
-            if (selected.__typename === "Note") {
-                history.push(`/notes/edit/${selected.id}`);
-                handleClose();
-            } else {
-                // localStorage.removeItem("breadCrums");
-                // localStorage.setItem("folderId", selected.id);
-                // console.log(`${selected.ancestryResolved}${selected.name}`);
-                // console.log(`${selected.ancestry}${selected.id}`);
-                enqueueSnackbar("This function does not work yet!", {
-                    variant: "info",
+            // localStorage.removeItem("breadCrums");
+            // localStorage.setItem("folderId", selected.id);
+            // console.log(`${selected.ancestryResolved}${selected.name}`);
+            // console.log(`${selected.ancestry}${selected.id}`);
+            if (movingObject.__typename === "Note") {
+                updateNote({
+                    variables: {
+                        id: movingObject.id,
+                        folderId: selected.id,
+                    },
                 });
-                handleClose();
             }
+            refetch();
+            enqueueSnackbar("This function does not work yet!", {
+                variant: "info",
+            });
+            handleClose();
         } else {
             enqueueSnackbar(`No note/folder found with the name ${search}`, {
                 variant: "warning",
@@ -92,64 +111,40 @@ export default function GlobalSearch({ notes, folders }) {
     return (
         <>
             <Dialog open={open} onClose={handleClose} fullWidth>
-                <DialogTitle>Search for note</DialogTitle>
+                <DialogTitle>Move to</DialogTitle>
                 <DialogContent>
                     <Autocomplete
                         autoHighlight
                         autoSelect
-                        options={[...notes.data.notes, ...folders.data.folders]}
+                        options={folders.data.folders}
                         fullWidth
-                        getOptionLabel={(option) =>
-                            option.__typename === "Note"
-                                ? option.filename
-                                : option.name
-                        }
+                        getOptionLabel={(option) => option.name}
                         getOptionSelected={(option, value) =>
                             option.id === value.id
                         }
                         onHighlightChange={onChange}
                         renderOption={(option, state) => {
-                            if (option.__typename === "Note") {
-                                return (
-                                    <Box display="flex">
-                                        <Typography
-                                            className={classes.disabled}
-                                        >
-                                            {option.folder.ancestryResolved}
-                                        </Typography>
-                                        <Typography>
-                                            {option.filename}
-                                        </Typography>
-                                    </Box>
-                                );
-                            } else {
-                                let ancestry =
-                                    option.ancestryResolved.split("/");
-                                ancestry.pop();
-                                ancestry.pop();
-                                ancestry = ancestry.join("/");
-                                return (
-                                    <Box display="flex">
-                                        <Folder
-                                            className={[
-                                                classes.disabled,
-                                                classes.folderIcon,
-                                            ]}
-                                        />
-                                        <Typography
-                                            className={classes.disabled}
-                                        >
-                                            {ancestry}/
-                                        </Typography>
-                                        <Typography>{option.name}</Typography>
-                                        <Typography
-                                            className={classes.disabled}
-                                        >
-                                            /
-                                        </Typography>
-                                    </Box>
-                                );
-                            }
+                            let ancestry = option.ancestryResolved.split("/");
+                            ancestry.pop();
+                            ancestry.pop();
+                            ancestry = ancestry.join("/");
+                            return (
+                                <Box display="flex">
+                                    <Folder
+                                        className={[
+                                            classes.disabled,
+                                            classes.folderIcon,
+                                        ]}
+                                    />
+                                    <Typography className={classes.disabled}>
+                                        {ancestry}/
+                                    </Typography>
+                                    <Typography>{option.name}</Typography>
+                                    <Typography className={classes.disabled}>
+                                        /
+                                    </Typography>
+                                </Box>
+                            );
                         }}
                         renderInput={(params) => (
                             <TextField

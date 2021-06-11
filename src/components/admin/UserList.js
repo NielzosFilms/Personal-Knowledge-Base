@@ -19,7 +19,7 @@ import ToolbarCustom from "../ToolbarCustom";
 
 import { getDateString } from "../../services/dateFunctions";
 
-export default function UserList({ queryResult }) {
+export default function UserList({ users }) {
     const history = useHistory();
 
     const redirect = (to) => {
@@ -38,7 +38,7 @@ export default function UserList({ queryResult }) {
                     <Box display="flex" alignItems="center">
                         <IconButton
                             color="secondary"
-                            onClick={() => queryResult.refetch()}
+                            onClick={() => users.refetch()}
                         >
                             <Refresh />
                         </IconButton>
@@ -55,7 +55,7 @@ export default function UserList({ queryResult }) {
                         <TableCell align="right">Actions</TableCell>
                     </TableHead>
                     <TableBody>
-                        {queryResult.data.users.map((user) => (
+                        {users.data.users.map((user) => (
                             <TableRow
                                 key={user.id}
                                 hover
