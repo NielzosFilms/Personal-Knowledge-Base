@@ -221,6 +221,7 @@ export default function EditUser({authenticatedUser}) {
 
 	if (loading) return <>Loading...</>;
 	if (error) return <>Error :(</>;
+	if (!data.userGroupById) return <></>;
 	return (
 		<>
 			<ToolbarCustom divider={false}>
