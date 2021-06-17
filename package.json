@@ -1,5 +1,5 @@
 {
-	"name": "personal-knowledge-base",
+	"name": "exo",
 	"version": "0.1.0",
 	"private": true,
 	"proxy": "http://localhost:8080",
