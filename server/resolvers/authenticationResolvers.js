@@ -87,7 +87,7 @@ const resolvers = {
 						: "3000";
 				return transporter
 					.sendMail({
-						from: "NielzosFilms Knowledge Base",
+						from: "EXO - NielzosFilms",
 						to: email,
 						subject:
 							"Confirm email address to create your account!",
@@ -135,7 +135,7 @@ const resolvers = {
 					: "3000";
 			return transporter
 				.sendMail({
-					from: "NielzosFilms Knowledge Base",
+					from: "EXO - NielzosFilms",
 					to: email,
 					subject: "Reset password / change username link.",
 

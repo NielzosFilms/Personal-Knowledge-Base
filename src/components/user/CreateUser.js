@@ -105,7 +105,7 @@ export default function CreateUser() {
 			<AppBar position="fixed" color="primary">
 				<Toolbar>
 					<Typography variant="h6" noWrap>
-						Knowledge Base
+						EXO
 					</Typography>
 				</Toolbar>
 			</AppBar>
