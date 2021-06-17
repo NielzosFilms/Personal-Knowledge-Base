@@ -205,16 +205,12 @@ function App() {
 						</AuthenticationProvider>
 					</Route>
 
-					<Route
-						exact
-						path="/admin/userGroups"
-						component={UserGroupsList}
-					/>
-					<Route
-						exact
-						path="/admin/userGroups/edit/:id"
-						component={UserGroupEdit}
-					/>
+					<Route exact path="/admin/userGroups">
+						<UserGroupsList />
+					</Route>
+					<Route exact path="/admin/userGroups/edit/:id">
+						<UserGroupEdit />
+					</Route>
 
 					<Route exact path="/" component={Welcome} />
 				</Layout>

@@ -1,4 +1,4 @@
-const { gql } = require("apollo-server-express");
+const {gql} = require("apollo-server-express");
 
 const typeDefs = gql(`
     scalar Date
@@ -107,6 +107,9 @@ const typeDefs = gql(`
         deleteUser(id: Int!): Boolean
 
         updateUserGroup(id: Int!, name: String!): UserGroup
+
+        addUserToUserGroup(userId: Int!, userGroupId: Int!): Boolean
+        removeUserFromUserGroup(userId: Int!, userGroupId: Int!): Boolean
 
         createNote(filename: String!, content: String, folderId: Int): Note
         updateNote(id: Int!, filename: String, content: String, folderId: Int): Note

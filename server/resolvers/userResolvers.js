@@ -145,6 +145,7 @@ const resolvers = {
 			return true;
 		},
 		updateUserGroup: async (root, {id, name}, {models}) => {
+			if (!loggedIn && !user.admin) return null;
 			// const db_lists = await models.GroceryList.findAll({
 			// 	where: {
 			// 		user_group_id: id,
@@ -179,6 +180,34 @@ const resolvers = {
 					id,
 				},
 			});
+		},
+		addUserToUserGroup: async (
+			root,
+			{userId, userGroupId},
+			{models, loggedIn, user}
+		) => {
+			if (!loggedIn && !user.admin) return false;
+			const userGroup = await models.UserGroup.findOne({
+				where: {
+					id: userGroupId,
+				},
+			});
+			await userGroup.addUser(userId);
+			return true;
+		},
+		removeUserFromUserGroup: async (
+			root,
+			{userId, userGroupId},
+			{models, loggedIn, user}
+		) => {
+			if (!loggedIn && !user.admin) return false;
+			const userGroup = await models.UserGroup.findOne({
+				where: {
+					id: userGroupId,
+				},
+			});
+			await userGroup.removeUser(userId);
+			return true;
 		},
 	},
 	User: {

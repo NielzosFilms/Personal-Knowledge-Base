@@ -19,11 +19,9 @@ import {useSnackbar} from "notistack";
 import {makeStyles} from "@material-ui/core/styles";
 import {useHistory} from "react-router-dom";
 
-const UPDATE_NOTE = gql`
-	mutation UpdateNote($id: Int!, $folderId: Int) {
-		updateNote(id: $id, folderId: $folderId) {
-			id
-		}
+const ADD_USER_MUT = gql`
+	mutation AddUser($userId: Int!, $userGroupId: Int!) {
+		addUserToUserGroup(userId: $userId, userGroupId: $userGroupId)
 	}
 `;
 
@@ -42,14 +40,14 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-export default function MoveDialog({
+export default function AddUserDialog({
+	userGroupId,
 	open,
 	setOpen,
-	movingObject,
-	folders,
+	users,
 	refetch,
 }) {
-	const [updateNote, updateNoteResult] = useMutation(UPDATE_NOTE);
+	const [addUser, addUserResult] = useMutation(ADD_USER_MUT);
 	const [search, setSearch] = useState("");
 	const [selected, setSelected] = useState(null);
 	const {enqueueSnackbar} = useSnackbar();
@@ -59,13 +57,13 @@ export default function MoveDialog({
 	useHotkeys(["Enter"], (e) => {
 		if (open) {
 			e.preventDefault();
-			openSelectedNote();
+			addSelectedUser();
 		}
 	});
 
 	const handleOpen = () => {
 		setSearch("");
-		folders.refetch();
+		users.refetch();
 		setOpen(!open);
 	};
 
@@ -78,27 +76,21 @@ export default function MoveDialog({
 		setSelected(option);
 	};
 
-	const openSelectedNote = () => {
+	const addSelectedUser = () => {
 		if (selected) {
-			// localStorage.removeItem("breadCrums");
-			// localStorage.setItem("folderId", selected.id);
-			// console.log(`${selected.ancestryResolved}${selected.name}`);
-			// console.log(`${selected.ancestry}${selected.id}`);
-			if (movingObject.__typename === "Note") {
-				updateNote({
-					variables: {
-						id: movingObject.id,
-						folderId: selected.id,
-					},
-				});
-			}
-			refetch();
-			enqueueSnackbar("This function does not work yet!", {
+			addUser({
+				variables: {
+					userId: selected.id,
+					userGroupId,
+				},
+			});
+			enqueueSnackbar("Added user to the user group", {
 				variant: "info",
 			});
+			refetch();
 			handleClose();
 		} else {
-			enqueueSnackbar(`No note/folder found with the name ${search}`, {
+			enqueueSnackbar(`No user found with the name ${search}`, {
 				variant: "warning",
 			});
 		}
@@ -107,12 +99,18 @@ export default function MoveDialog({
 	return (
 		<>
 			<Dialog open={open} onClose={handleClose} fullWidth>
-				<DialogTitle>Move to</DialogTitle>
+				<DialogTitle>Add user to group</DialogTitle>
 				<DialogContent>
 					<Autocomplete
 						autoHighlight
 						autoSelect
-						options={folders.data.folders}
+						options={users.data.users.filter((user) => {
+							let found = false;
+							user.userGroups.forEach((userGroup) => {
+								if (userGroup.id === userGroupId) found = true;
+							});
+							return !found;
+						})}
 						fullWidth
 						getOptionLabel={(option) => option.name}
 						getOptionSelected={(option, value) =>
@@ -120,25 +118,9 @@ export default function MoveDialog({
 						}
 						onHighlightChange={onChange}
 						renderOption={(option, state) => {
-							let ancestry = option.ancestryResolved.split("/");
-							ancestry.pop();
-							ancestry.pop();
-							ancestry = ancestry.join("/");
 							return (
 								<Box display="flex">
-									<Folder
-										className={[
-											classes.disabled,
-											classes.folderIcon,
-										]}
-									/>
-									<Typography className={classes.disabled}>
-										{ancestry}/
-									</Typography>
 									<Typography>{option.name}</Typography>
-									<Typography className={classes.disabled}>
-										/
-									</Typography>
 								</Box>
 							);
 						}}
@@ -161,10 +143,10 @@ export default function MoveDialog({
 						justifyContent="space-between"
 					>
 						<Button color="primary" onClick={handleClose}>
-							Close
+							Cancel
 						</Button>
-						<Button color="primary" onClick={openSelectedNote}>
-							Open
+						<Button color="primary" onClick={addSelectedUser}>
+							Add
 						</Button>
 					</Box>
 				</DialogActions>

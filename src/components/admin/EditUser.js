@@ -182,6 +182,7 @@ export default function EditUser({authenticatedUser}) {
 							<Grid item xs={6}>
 								<Box display="flex" alignItems="center">
 									<Switch
+										color="primary"
 										disabled={
 											Number(authenticatedUser.id) ===
 											Number(id)
@@ -199,10 +200,6 @@ export default function EditUser({authenticatedUser}) {
 							</Grid>
 						</Grid>
 					</Paper>
-				</Grid>
-				<Grid item xs={12} sm={6}>
-					<Typography variant="h4">Access</Typography>
-					<Paper className={classes.paper}></Paper>
 				</Grid>
 			</Grid>
 		</>

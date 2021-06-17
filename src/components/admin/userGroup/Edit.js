@@ -38,6 +38,8 @@ import ToolbarCustom from "../../ToolbarCustom";
 import {getDateString} from "../../../services/dateFunctions";
 import useHotkeys from "@reecelucas/react-use-hotkeys";
 import {useSnackbar} from "notistack";
+import AddUserDialog from "./AddUserDialog";
+import {DataProvider} from "../../../services";
 
 const QUERY_GROUP = gql`
 	query UserGroupById($id: Int!) {
@@ -49,6 +51,10 @@ const QUERY_GROUP = gql`
 				name
 				createdAt
 				updatedAt
+			}
+			users {
+				id
+				name
 			}
 			createdAt
 			updatedAt
@@ -83,6 +89,24 @@ const UPDATE_LIST = gql`
 		updateGroceryList(id: $id, name: $name) {
 			id
 		}
+	}
+`;
+
+const GLOBAL_USERS = gql`
+	query {
+		users {
+			id
+			name
+			userGroups {
+				id
+			}
+		}
+	}
+`;
+
+const REMOVE_USER_MUT = gql`
+	mutation AddUser($userId: Int!, $userGroupId: Int!) {
+		removeUserFromUserGroup(userId: $userId, userGroupId: $userGroupId)
 	}
 `;
 
@@ -123,9 +147,11 @@ export default function EditUser({authenticatedUser}) {
 	const [createListMut, createListMutRes] = useMutation(CREATE_LIST);
 	const [deleteListMut, deleteListMutRes] = useMutation(DELETE_LIST);
 	const [updateListMut, updateListMutRes] = useMutation(UPDATE_LIST);
+	const [removeUser, removeUserResult] = useMutation(REMOVE_USER_MUT);
 	const [group, setGroup] = React.useState({});
 	const [createList, setCreateList] = React.useState(false);
 	const [editList, setEditList] = React.useState(false);
+	const [addUserOpen, setAddUserOpen] = React.useState(false);
 	const [name, setName] = React.useState("");
 	const [listId, setListId] = React.useState(null);
 	const classes = useStyles();
@@ -217,6 +243,16 @@ export default function EditUser({authenticatedUser}) {
 		setListId(id);
 		setName(name);
 		setEditList(true);
+	};
+
+	const handleUserDelete = (userId) => {
+		removeUser({
+			variables: {
+				userId,
+				userGroupId: Number(id),
+			},
+		});
+		refetch();
 	};
 
 	if (loading) return <>Loading...</>;
@@ -372,6 +408,62 @@ export default function EditUser({authenticatedUser}) {
 					</Paper>
 				</Grid>
 			</Grid>
+			<Grid container spacing={2}>
+				<Grid item xs={12} sm={6}>
+					<Typography variant="h4">Users</Typography>
+					<Paper className={classes.paper}>
+						<TableContainer>
+							<Table>
+								<TableHead>
+									<TableCell>Name</TableCell>
+									<TableCell align="right">Actions</TableCell>
+								</TableHead>
+								<TableBody>
+									{group?.users?.map((user, index) => (
+										<TableRow key={index} hover>
+											<TableCell>{user.name}</TableCell>
+											<TableCell align="right">
+												{user.id && (
+													<Box
+														display="flex"
+														justifyContent="flex-end"
+													>
+														<IconButton
+															onClick={() =>
+																handleUserDelete(
+																	user.id
+																)
+															}
+															color="secondary"
+															size="small"
+														>
+															<DeleteOutlined />
+														</IconButton>
+													</Box>
+												)}
+											</TableCell>
+										</TableRow>
+									))}
+									<TableRow>
+										<TableCell></TableCell>
+										<TableCell align="right">
+											<IconButton
+												onClick={() =>
+													setAddUserOpen(true)
+												}
+												color="secondary"
+												size="small"
+											>
+												<Add />
+											</IconButton>
+										</TableCell>
+									</TableRow>
+								</TableBody>
+							</Table>
+						</TableContainer>
+					</Paper>
+				</Grid>
+			</Grid>
 			<Dialog open={createList}>
 				<DialogTitle>Create grocery list</DialogTitle>
 				<DialogContent>
@@ -428,6 +520,14 @@ export default function EditUser({authenticatedUser}) {
 					</Button>
 				</DialogActions>
 			</Dialog>
+			<DataProvider query={GLOBAL_USERS}>
+				<AddUserDialog
+					userGroupId={Number(id)}
+					open={addUserOpen}
+					setOpen={setAddUserOpen}
+					refetch={refetch}
+				/>
+			</DataProvider>
 		</>
 	);
 }

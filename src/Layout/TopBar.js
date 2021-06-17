@@ -30,6 +30,7 @@ import {
 } from "@material-ui/icons";
 import {useHistory, Redirect} from "react-router-dom";
 import {useSnackbar} from "notistack";
+import About from "../components/About";
 
 const drawerWidth = 240;
 
@@ -296,7 +297,7 @@ export default function TopBar({authenticatedUser, logout}) {
 				<div className={classes.spacer}></div>
 				<Divider />
 				<ListItem>
-					<Box>
+					<Box display="flex" flexDirection="column">
 						<Typography>{authenticatedUser.name}</Typography>
 						{authenticatedUser.admin && (
 							<Typography
@@ -313,6 +314,7 @@ export default function TopBar({authenticatedUser, logout}) {
 						>
 							Change password/username
 						</Link>
+						<About />
 					</Box>
 				</ListItem>
 			</Drawer>
