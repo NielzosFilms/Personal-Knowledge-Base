@@ -98,6 +98,6 @@ app.use(function (req, res) {
 // const httpServer = http.createServer(app);
 // httpServer.listen(8080);
 const httpsServer = https.createServer(credentials, app);
-httpsServer.listen(8080);
+httpsServer.listen(process.env.SERVER_PORT || 8080);
 
 console.log(`Listening on port ${process.env.SERVER_PORT || 8080}`);
