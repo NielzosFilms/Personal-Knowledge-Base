@@ -46,6 +46,7 @@
 		"start:prod": "NODE_ENV=production node server/server.js",
 		"build": "react-scripts build",
 		"test": "react-scripts test",
+		"test:encryption": "node tests/testEncryption.js",
 		"eject": "react-scripts eject"
 	},
 	"eslintConfig": {

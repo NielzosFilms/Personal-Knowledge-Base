@@ -3,24 +3,26 @@ import ReactDOM from "react-dom";
 import App from "./App/App";
 import reportWebVitals from "./reportWebVitals";
 
-import {ApolloClient, createHttpLink, InMemoryCache} from "@apollo/client";
-import {setContext} from "@apollo/client/link/context";
-import {ApolloProvider} from "@apollo/client/react";
-import {BrowserRouter as Router} from "react-router-dom";
-import {SnackbarProvider} from "notistack";
+import { ApolloClient, createHttpLink, InMemoryCache } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
+import { ApolloProvider } from "@apollo/client/react";
+import { BrowserRouter as Router } from "react-router-dom";
+import { SnackbarProvider } from "notistack";
 
 const host = process.env.REACT_APP_APOLLO_CLIENT_HOST || process.env.HOST;
 const port =
 	process.env.REACT_APP_APOLLO_CLIENT_PORT || process.env.SERVER_PORT;
 
+const method = process.env.NODE_ENV === "production" ? "https" : "http";
+
 console.log(process.env.NODE_ENV);
 
 const httpLink = createHttpLink({
-	uri: `https://${host || "localhost"}:${port || "8080"}/graphql`,
-	...(process.env.NODE_ENV === "production" && {credentials: "include"}),
+	uri: `${method}://${host || "localhost"}:${port || "8080"}/graphql`,
+	...(process.env.NODE_ENV === "production" && { credentials: "include" }),
 });
 
-const authLink = setContext((_, {headers}) => {
+const authLink = setContext((_, { headers }) => {
 	const token = localStorage.getItem("token");
 	return {
 		headers: {

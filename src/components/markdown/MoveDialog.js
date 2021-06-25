@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState } from "react";
 import useHotkeys from "@reecelucas/react-use-hotkeys";
 import {
 	Dialog,
@@ -12,12 +12,12 @@ import {
 	IconButton,
 	Tooltip,
 } from "@material-ui/core";
-import {SearchOutlined, Folder} from "@material-ui/icons";
-import {useMutation, gql} from "@apollo/client";
-import {Autocomplete} from "@material-ui/lab";
-import {useSnackbar} from "notistack";
-import {makeStyles} from "@material-ui/core/styles";
-import {useHistory} from "react-router-dom";
+import { SearchOutlined, Folder } from "@material-ui/icons";
+import { useMutation, gql } from "@apollo/client";
+import { Autocomplete } from "@material-ui/lab";
+import { useSnackbar } from "notistack";
+import { makeStyles } from "@material-ui/core/styles";
+import { useHistory } from "react-router-dom";
 
 const UPDATE_NOTE = gql`
 	mutation UpdateNote($id: Int!, $folderId: Int) {
@@ -52,7 +52,7 @@ export default function MoveDialog({
 	const [updateNote, updateNoteResult] = useMutation(UPDATE_NOTE);
 	const [search, setSearch] = useState("");
 	const [selected, setSelected] = useState(null);
-	const {enqueueSnackbar} = useSnackbar();
+	const { enqueueSnackbar } = useSnackbar();
 	const classes = useStyles();
 	const history = useHistory();
 
@@ -169,16 +169,6 @@ export default function MoveDialog({
 					</Box>
 				</DialogActions>
 			</Dialog>
-			<Tooltip title="Global search (ctrl+p)">
-				<Button
-					variant="contained"
-					color="primary"
-					onClick={handleOpen}
-					className={classes.searchButton}
-				>
-					<SearchOutlined />
-				</Button>
-			</Tooltip>
 		</>
 	);
 }
